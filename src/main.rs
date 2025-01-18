@@ -4,11 +4,13 @@ mod camera;
 mod combo;
 mod rhythm;
 mod schedule;
+mod state;
 
 use camera::CameraPlugin;
 use combo::ComboPlugin;
 use rhythm::RhythmPlugin;
 use schedule::SchedulePlugin;
+use state::StatePlugin;
 
 fn main() {
     App::new()
@@ -17,5 +19,6 @@ fn main() {
         .add_plugins(CameraPlugin)
         .add_plugins(ComboPlugin)
         .add_plugins(SchedulePlugin)
+        .add_plugins(StatePlugin)
         .run();
 }
