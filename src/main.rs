@@ -5,6 +5,7 @@ mod combo;
 mod rhythm;
 mod schedule;
 mod state;
+mod types;
 
 use camera::CameraPlugin;
 use combo::ComboPlugin;

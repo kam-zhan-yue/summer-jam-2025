@@ -1,5 +1,6 @@
 use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
 use crate::schedule::GameSet;
+use crate::types::{Location, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -8,33 +9,10 @@ const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
 const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
 const MAX_HEALTH: i32 = 100;
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
-pub enum Tool {
-    #[default]
-    None,
-    Toilet,
-    Underwear,
-    Lighter,
-}
-
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
-pub enum Location {
-    #[default]
-    None,
-    Library,
-    Classroom,
-    Gymnasium,
-}
-
 #[derive(Debug, Default)]
 pub struct Choice {
     pub tool: Tool,
     pub location: Location,
-}
-
-#[derive(Component, Debug, Default)]
-pub struct Combo {
-    pub inputs: Vec<i32>,
 }
 
 #[derive(Component, Debug)]
@@ -49,7 +27,6 @@ impl Default for Health {
 #[derive(Component, Debug, Default)]
 pub struct PlayerData {
     pub health: i32,
-    pub combo: Vec<i32>,
     pub map: HashMap<KeyCode, Choice>,
     pub choice: Choice,
 }
@@ -58,7 +35,6 @@ impl PlayerData {
     fn new(map: HashMap<KeyCode, Choice>) -> Self {
         Self {
             health: MAX_HEALTH,
-            combo: Vec::new(),
             map,
             choice: Choice::default(),
         }
@@ -67,13 +43,11 @@ impl PlayerData {
 
 #[derive(Component, Debug)]
 #[require(PlayerData)]
-pub struct Player;
+pub struct PlayerOne;
 
-#[derive(Resource, Debug)]
-pub struct Game {
-    player_one: PlayerData,
-    player_two: PlayerData,
-}
+#[derive(Component, Debug)]
+#[require(PlayerData)]
+pub struct PlayerTwo;
 
 pub struct ComboPlugin;
 
@@ -140,19 +114,19 @@ fn setup_game(
         },
     );
 
-    let player_one = commands.spawn((
+    commands.spawn((
         Mesh2d(meshes.add(Rectangle::default())),
         MeshMaterial2d(materials.add(PLAYER_ONE_COLOUR)),
         Transform::from_xyz(-100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
-        Player,
+        PlayerOne,
         PlayerData::new(player_one_inputs),
     ));
 
-    let player_two = commands.spawn((
+    commands.spawn((
         Mesh2d(meshes.add(Triangle2d::default())),
         MeshMaterial2d(materials.add(PLAYER_TWO_COLOUR)),
         Transform::from_xyz(100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
-        Player,
+        PlayerTwo,
         PlayerData::new(player_two_inputs),
     ));
 }
@@ -184,14 +158,75 @@ fn handle_input(
     }
 }
 
-fn update_combo(mut beat_event_reader: EventReader<BeatEvent>) {
+fn update_combo(
+    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
+    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut beat_event_reader: EventReader<BeatEvent>,
+) {
+    if beat_event_reader.len() == 0 {
+        return;
+    }
+    let Ok(mut player_one) = player_one_query.get_single_mut() else {
+        return;
+    };
+    let Ok(mut player_two) = player_two_query.get_single_mut() else {
+        return;
+    };
     for beat in beat_event_reader.read() {
-        println!("Beat: {:?}", beat.0);
+        match beat.0 {
+            1 => resolve_tool(&mut player_one, &mut player_two),
+            2 => resolve_location(&mut player_one, &mut player_two),
+            _ => (),
+        }
     }
 }
 
-fn resolve_combo(mut resolve_event_reader: EventReader<ResolveEvent>) {
+fn resolve_tool(player_one: &mut PlayerData, player_two: &mut PlayerData) {
+    let tool_one = player_one.choice.tool;
+    let tool_two = player_two.choice.tool;
+    print!("Player One: {:?} Player Two: {:?} ", tool_one, tool_two);
+    if tool_one > tool_two {
+        print!("Player One Wins");
+    } else if tool_one < tool_two {
+        print!("Player Two Wins");
+    } else {
+        print!("Draw");
+    }
+    print!("\n");
+}
+
+fn resolve_location(player_one: &mut PlayerData, player_two: &mut PlayerData) {
+    let location_one = player_one.choice.location;
+    let location_two = player_two.choice.location;
+    print!(
+        "Player One: {:?} Player Two: {:?} ",
+        location_one, location_two
+    );
+    if location_one > location_two {
+        print!("Player One Wins");
+    } else if location_one < location_two {
+        print!("Player Two Wins");
+    } else {
+        print!("Draw");
+    }
+    print!("\n");
+}
+
+fn resolve_combo(
+    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
+    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut resolve_event_reader: EventReader<ResolveEvent>,
+) {
     for _ in resolve_event_reader.read() {
+        let Ok(mut player_one) = player_one_query.get_single_mut() else {
+            return;
+        };
+        let Ok(mut player_two) = player_two_query.get_single_mut() else {
+            return;
+        };
+        // Reset the player choices
+        player_one.choice = Choice::default();
+        player_two.choice = Choice::default();
         println!("Resolve!");
     }
 }
