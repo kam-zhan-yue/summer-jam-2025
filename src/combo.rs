@@ -41,6 +41,13 @@ impl PlayerData {
     }
 }
 
+#[derive(Eq, Hash, PartialEq, Debug)]
+enum Outcome {
+    PlayerOne,
+    PlayerTwo,
+    Draw,
+}
+
 #[derive(Component, Debug)]
 #[require(PlayerData)]
 pub struct PlayerOne;
@@ -147,12 +154,12 @@ fn handle_input(
         }
 
         if let Some(choice) = selected_choice {
-            if player.choice.tool == Tool::None && rhythm.beat == 1 {
-                println!("{:?}", choice.tool);
+            if player.choice.tool == Tool::None && rhythm.beat == 0 {
                 player.choice.tool = choice.tool;
-            } else if player.choice.location == Location::None && rhythm.beat == 2 {
-                println!("{:?}", choice.location);
-                player.choice.location = choice.location
+                println!("{:?}", player.choice.tool);
+            } else if player.choice.location == Location::None && rhythm.beat == 1 {
+                player.choice.location = choice.location;
+                println!("{:?}", player.choice.location);
             }
         }
     }
@@ -163,9 +170,6 @@ fn update_combo(
     mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
     mut beat_event_reader: EventReader<BeatEvent>,
 ) {
-    if beat_event_reader.len() == 0 {
-        return;
-    }
     let Ok(mut player_one) = player_one_query.get_single_mut() else {
         return;
     };
@@ -173,43 +177,43 @@ fn update_combo(
         return;
     };
     for beat in beat_event_reader.read() {
-        match beat.0 {
-            1 => resolve_tool(&mut player_one, &mut player_two),
-            2 => resolve_location(&mut player_one, &mut player_two),
-            _ => (),
+        let outcome = if beat.0 == 1 {
+            println!("=========TOOL=========");
+            resolve(&mut player_one, &mut player_two, |player| {
+                &player.choice.tool
+            })
+        } else if beat.0 == 2 {
+            println!("=========LOCATION=========");
+            resolve(&mut player_one, &mut player_two, |player| {
+                &player.choice.location
+            })
+        } else {
+            Outcome::Draw
+        };
+
+        match outcome {
+            Outcome::PlayerOne => println!("Player One Wins"),
+            Outcome::PlayerTwo => println!("Player Two Wins"),
+            Outcome::Draw => println!("Draw"),
         }
     }
 }
 
-fn resolve_tool(player_one: &mut PlayerData, player_two: &mut PlayerData) {
-    let tool_one = player_one.choice.tool;
-    let tool_two = player_two.choice.tool;
-    print!("Player One: {:?} Player Two: {:?} ", tool_one, tool_two);
-    if tool_one > tool_two {
-        print!("Player One Wins");
-    } else if tool_one < tool_two {
-        print!("Player Two Wins");
+fn resolve<T: std::fmt::Debug + PartialOrd>(
+    player_one: &mut PlayerData,
+    player_two: &mut PlayerData,
+    get_choice: fn(&PlayerData) -> &T,
+) -> Outcome {
+    let choice_one = get_choice(player_one);
+    let choice_two = get_choice(player_two);
+    println!("Player One: {:?} Player Two: {:?} ", choice_one, choice_two);
+    if choice_one > choice_two {
+        Outcome::PlayerOne
+    } else if choice_one < choice_two {
+        Outcome::PlayerTwo
     } else {
-        print!("Draw");
+        Outcome::Draw
     }
-    print!("\n");
-}
-
-fn resolve_location(player_one: &mut PlayerData, player_two: &mut PlayerData) {
-    let location_one = player_one.choice.location;
-    let location_two = player_two.choice.location;
-    print!(
-        "Player One: {:?} Player Two: {:?} ",
-        location_one, location_two
-    );
-    if location_one > location_two {
-        print!("Player One Wins");
-    } else if location_one < location_two {
-        print!("Player Two Wins");
-    } else {
-        print!("Draw");
-    }
-    print!("\n");
 }
 
 fn resolve_combo(
@@ -224,9 +228,34 @@ fn resolve_combo(
         let Ok(mut player_two) = player_two_query.get_single_mut() else {
             return;
         };
+
+        println!("=========RESOLVE=========");
+        let mut map: HashMap<Outcome, i32> = HashMap::new();
+
+        let tool = resolve(&mut player_one, &mut player_two, |player| {
+            &player.choice.tool
+        });
+        let location = resolve(&mut player_one, &mut player_two, |player| {
+            &player.choice.location
+        });
+
+        *map.entry(tool).or_insert(0) += 1;
+        *map.entry(location).or_insert(0) += 1;
+
+        let player_one_wins = map.get(&Outcome::PlayerOne).unwrap_or(&0);
+        let player_two_wins = map.get(&Outcome::PlayerTwo).unwrap_or(&0);
+
+        let winner = if player_one_wins > player_two_wins {
+            Outcome::PlayerOne
+        } else if player_one_wins < player_two_wins {
+            Outcome::PlayerTwo
+        } else {
+            Outcome::Draw
+        };
+        println!("Overall Winner is: {:?}", winner);
+
         // Reset the player choices
         player_one.choice = Choice::default();
         player_two.choice = Choice::default();
-        println!("Resolve!");
     }
 }

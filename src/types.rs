@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
 pub enum Tool {
     #[default]
     None,
@@ -9,23 +9,31 @@ pub enum Tool {
     Lighter,
 }
 
-impl PartialOrd for Tool {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl Ord for Tool {
+    fn cmp(&self, other: &Self) -> Ordering {
         use Tool::*;
         match (self, other) {
-            (None, _) | (_, None) => Some(Ordering::Equal),
-            (Toilet, Lighter) => Some(Ordering::Greater),
-            (Lighter, Toilet) => Some(Ordering::Less),
-            (Lighter, Underwear) => Some(Ordering::Greater),
-            (Underwear, Lighter) => Some(Ordering::Less),
-            (Underwear, Toilet) => Some(Ordering::Greater),
-            (Toilet, Underwear) => Some(Ordering::Less),
-            (a, b) => a.partial_cmp(b),
+            (None, None) => Ordering::Equal,
+            (Toilet, Toilet) => Ordering::Equal,
+            (Underwear, Underwear) => Ordering::Equal,
+            (Lighter, Lighter) => Ordering::Equal,
+            (Toilet, None) => Ordering::Greater,
+            (Lighter, None) => Ordering::Greater,
+            (Underwear, None) => Ordering::Greater,
+            (None, Toilet) => Ordering::Less,
+            (None, Lighter) => Ordering::Less,
+            (None, Underwear) => Ordering::Less,
+            (Toilet, Lighter) => Ordering::Greater,
+            (Lighter, Toilet) => Ordering::Less,
+            (Lighter, Underwear) => Ordering::Greater,
+            (Underwear, Lighter) => Ordering::Less,
+            (Underwear, Toilet) => Ordering::Greater,
+            (Toilet, Underwear) => Ordering::Less,
         }
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
 pub enum Location {
     #[default]
     None,
@@ -34,18 +42,22 @@ pub enum Location {
     Gymnasium,
 }
 
-impl PartialOrd for Location {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl Ord for Location {
+    fn cmp(&self, other: &Self) -> Ordering {
         use Location::*;
         match (self, other) {
-            (None, _) | (_, None) => Some(Ordering::Equal),
-            (Library, Gymnasium) => Some(Ordering::Greater),
-            (Gymnasium, Library) => Some(Ordering::Less),
-            (Gymnasium, Classroom) => Some(Ordering::Greater),
-            (Classroom, Gymnasium) => Some(Ordering::Less),
-            (Classroom, Library) => Some(Ordering::Greater),
-            (Library, Classroom) => Some(Ordering::Less),
-            (a, b) => a.partial_cmp(b),
+            (None, None) => Ordering::Equal,
+            (Library, Library) => Ordering::Equal,
+            (Classroom, Classroom) => Ordering::Equal,
+            (Gymnasium, Gymnasium) => Ordering::Equal,
+            (None, _) => Ordering::Less,
+            (_, None) => Ordering::Greater,
+            (Library, Classroom) => Ordering::Less,
+            (Library, Gymnasium) => Ordering::Greater,
+            (Classroom, Library) => Ordering::Greater,
+            (Classroom, Gymnasium) => Ordering::Less,
+            (Gymnasium, Library) => Ordering::Less,
+            (Gymnasium, Classroom) => Ordering::Greater,
         }
     }
 }
