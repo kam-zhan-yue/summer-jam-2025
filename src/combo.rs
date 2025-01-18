@@ -1,11 +1,40 @@
+use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
 use crate::schedule::GameSet;
 use bevy::prelude::*;
+use std::collections::HashMap;
 
+const PLAYER_LENGTH: f32 = 25.;
+const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
+const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
 const MAX_HEALTH: i32 = 100;
+
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+pub enum Tool {
+    #[default]
+    None,
+    Toilet,
+    Underwear,
+    Lighter,
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+pub enum Location {
+    #[default]
+    None,
+    Library,
+    Classroom,
+    Gymnasium,
+}
+
+#[derive(Debug, Default)]
+pub struct Choice {
+    pub tool: Tool,
+    pub location: Location,
+}
 
 #[derive(Component, Debug, Default)]
 pub struct Combo {
-    pub inputs: Vec<char>,
+    pub inputs: Vec<i32>,
 }
 
 #[derive(Component, Debug)]
@@ -18,39 +47,151 @@ impl Default for Health {
 }
 
 #[derive(Component, Debug, Default)]
-#[require(Health, Combo)]
+pub struct PlayerData {
+    pub health: i32,
+    pub combo: Vec<i32>,
+    pub map: HashMap<KeyCode, Choice>,
+    pub choice: Choice,
+}
+
+impl PlayerData {
+    fn new(map: HashMap<KeyCode, Choice>) -> Self {
+        Self {
+            health: MAX_HEALTH,
+            combo: Vec::new(),
+            map,
+            choice: Choice::default(),
+        }
+    }
+}
+
+#[derive(Component, Debug)]
+#[require(PlayerData)]
 pub struct Player;
 
 #[derive(Resource, Debug)]
 pub struct Game {
-    player_one: Player,
-    player_two: Player,
-}
-
-impl Default for Game {
-    fn default() -> Game {
-        Self {
-            player_one: Player::default(),
-            player_two: Player::default(),
-        }
-    }
+    player_one: PlayerData,
+    player_two: PlayerData,
 }
 
 pub struct ComboPlugin;
 
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Game>();
-        app.add_systems(
-            Update,
-            (handle_input, update_combo).chain().in_set(GameSet::Combo),
-        );
-        app.add_systems(Update, resolve_combo.in_set(GameSet::Resolve));
+        app.add_systems(Startup, setup_game)
+            .add_systems(
+                Update,
+                (handle_input, update_combo).chain().in_set(GameSet::Combo),
+            )
+            .add_systems(Update, resolve_combo.in_set(GameSet::Resolve));
     }
 }
 
-fn handle_input() {}
+fn setup_game(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    // game: &mut ResMut<Game>,
+) {
+    let mut player_one_inputs: HashMap<KeyCode, Choice> = HashMap::new();
+    player_one_inputs.insert(
+        KeyCode::KeyA,
+        Choice {
+            tool: Tool::Toilet,
+            location: Location::Classroom,
+        },
+    );
+    player_one_inputs.insert(
+        KeyCode::KeyS,
+        Choice {
+            tool: Tool::Underwear,
+            location: Location::Gymnasium,
+        },
+    );
+    player_one_inputs.insert(
+        KeyCode::KeyD,
+        Choice {
+            tool: Tool::Lighter,
+            location: Location::Library,
+        },
+    );
 
-fn update_combo() {}
+    let mut player_two_inputs: HashMap<KeyCode, Choice> = HashMap::new();
+    player_two_inputs.insert(
+        KeyCode::KeyJ,
+        Choice {
+            tool: Tool::Toilet,
+            location: Location::Classroom,
+        },
+    );
+    player_two_inputs.insert(
+        KeyCode::KeyK,
+        Choice {
+            tool: Tool::Underwear,
+            location: Location::Gymnasium,
+        },
+    );
+    player_two_inputs.insert(
+        KeyCode::KeyL,
+        Choice {
+            tool: Tool::Lighter,
+            location: Location::Library,
+        },
+    );
 
-fn resolve_combo() {}
+    let player_one = commands.spawn((
+        Mesh2d(meshes.add(Rectangle::default())),
+        MeshMaterial2d(materials.add(PLAYER_ONE_COLOUR)),
+        Transform::from_xyz(-100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Player,
+        PlayerData::new(player_one_inputs),
+    ));
+
+    let player_two = commands.spawn((
+        Mesh2d(meshes.add(Triangle2d::default())),
+        MeshMaterial2d(materials.add(PLAYER_TWO_COLOUR)),
+        Transform::from_xyz(100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Player,
+        PlayerData::new(player_two_inputs),
+    ));
+}
+
+fn handle_input(
+    mut query: Query<&mut PlayerData>,
+    input: Res<ButtonInput<KeyCode>>,
+    rhythm: Res<Rhythm>,
+) {
+    for mut player in query.iter_mut() {
+        let mut selected_choice = None;
+        // Get the selected data
+        for (key, choice) in &player.map {
+            if input.pressed(*key) {
+                selected_choice = Some(choice);
+                break;
+            }
+        }
+
+        if let Some(choice) = selected_choice {
+            if player.choice.tool == Tool::None && rhythm.beat == 1 {
+                println!("{:?}", choice.tool);
+                player.choice.tool = choice.tool;
+            } else if player.choice.location == Location::None && rhythm.beat == 2 {
+                println!("{:?}", choice.location);
+                player.choice.location = choice.location
+            }
+        }
+    }
+}
+
+fn update_combo(mut beat_event_reader: EventReader<BeatEvent>) {
+    for beat in beat_event_reader.read() {
+        println!("Beat: {:?}", beat.0);
+    }
+}
+
+fn resolve_combo(mut resolve_event_reader: EventReader<ResolveEvent>) {
+    for _ in resolve_event_reader.read() {
+        println!("Resolve!");
+    }
+}
