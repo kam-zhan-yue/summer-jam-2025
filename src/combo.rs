@@ -15,15 +15,6 @@ pub struct Choice {
     pub location: Location,
 }
 
-#[derive(Component, Debug)]
-pub struct Health(i32);
-
-impl Default for Health {
-    fn default() -> Self {
-        Health(MAX_HEALTH)
-    }
-}
-
 #[derive(Component, Debug, Default)]
 pub struct PlayerData {
     pub health: i32,
@@ -156,10 +147,10 @@ fn handle_input(
         if let Some(choice) = selected_choice {
             if player.choice.tool == Tool::None && rhythm.beat == 0 {
                 player.choice.tool = choice.tool;
-                println!("{:?}", player.choice.tool);
+                // println!("{:?}", player.choice.tool);
             } else if player.choice.location == Location::None && rhythm.beat == 1 {
                 player.choice.location = choice.location;
-                println!("{:?}", player.choice.location);
+                // println!("{:?}", player.choice.location);
             }
         }
     }
