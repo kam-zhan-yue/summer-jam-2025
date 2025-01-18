@@ -254,8 +254,31 @@ fn resolve_combo(
         };
         println!("Overall Winner is: {:?}", winner);
 
+        update_outcome(&mut player_one, &mut player_two, winner);
+
         // Reset the player choices
         player_one.choice = Choice::default();
         player_two.choice = Choice::default();
+    }
+}
+
+fn update_outcome(player_one: &mut PlayerData, player_two: &mut PlayerData, outcome: Outcome) {
+    match outcome {
+        Outcome::PlayerOne => {
+            player_two.health -= 1;
+        }
+        Outcome::PlayerTwo => {
+            player_one.health -= 1;
+        }
+        Outcome::Draw => (),
+    }
+    check_end_game(player_one, player_two);
+}
+
+fn check_end_game(player_one: &mut PlayerData, player_two: &mut PlayerData) {
+    if player_one.health <= 0 {
+        println!("Player Two Wins The Game!");
+    } else if player_two.health <= 0 {
+        println!("Player One Wins The Game!");
     }
 }
