@@ -7,6 +7,7 @@ pub enum GameSet {
     Rhythm,
     Combo,
     Resolve,
+    Ui,
 }
 
 pub struct SchedulePlugin;
