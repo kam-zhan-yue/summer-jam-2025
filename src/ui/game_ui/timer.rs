@@ -23,7 +23,7 @@ impl Plugin for TimerPlugin {
     }
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Root Node
     commands
         .spawn((
@@ -36,7 +36,15 @@ fn setup(mut commands: Commands) {
             },
             TimerPopup,
         ))
-        .with_child((Timer, Text::new("3.0")));
+        .with_child((
+            Timer,
+            Text::new("3.0"),
+            TextFont {
+                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font_size: 18.0,
+                ..default()
+            },
+        ));
 }
 
 fn update_timer(mut query: Query<&mut Text, With<Timer>>, rhythm: Res<Rhythm>) {
