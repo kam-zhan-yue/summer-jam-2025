@@ -2,7 +2,7 @@ use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
 use crate::state::GameState;
-use crate::types::{Location, Tool};
+use crate::types::{Location, Player, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -15,6 +15,12 @@ const MAX_HEALTH: i32 = 1;
 pub struct Choice {
     pub tool: Tool,
     pub location: Location,
+}
+
+#[derive(Debug)]
+pub enum ChoiceEnum {
+    Tool(Tool),
+    Location(Location),
 }
 
 #[derive(Component, Debug, Default)]
@@ -48,6 +54,12 @@ pub struct PlayerOne;
 #[derive(Component, Debug)]
 #[require(PlayerData)]
 pub struct PlayerTwo;
+
+#[derive(Event, Debug)]
+pub struct ChoiceEvent {
+    choice: Choice,
+    player: Player,
+}
 
 pub struct ComboPlugin;
 

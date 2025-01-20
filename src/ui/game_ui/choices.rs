@@ -76,8 +76,8 @@ fn spawn_player_choices(
                 parent
                     .spawn((
                         Node {
-                            width: Val::Px(50.0),
-                            height: Val::Px(50.0),
+                            width: Val::Px(75.0),
+                            height: Val::Px(75.0),
                             border: UiRect::all(Val::Px(5.0)),
                             align_items: AlignItems::Center,
                             align_content: AlignContent::Center,

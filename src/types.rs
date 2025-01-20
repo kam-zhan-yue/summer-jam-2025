@@ -1,5 +1,11 @@
 use std::cmp::Ordering;
 
+#[derive(Debug)]
+pub enum Player {
+    One,
+    Two,
+}
+
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
 pub enum Tool {
     #[default]
