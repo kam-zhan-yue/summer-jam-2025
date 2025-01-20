@@ -1,7 +1,7 @@
 use crate::schedule::GameSet;
 use bevy::prelude::*;
 
-const BEAT_LIMIT: i32 = 2;
+pub const BEAT_LIMIT: i32 = 2;
 const BEAT_TIME: f32 = 1.;
 
 #[derive(Resource, Debug)]
