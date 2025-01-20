@@ -84,6 +84,7 @@ impl Plugin for ComboPlugin {
                 .in_set(GameSet::Resolve)
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_event::<ChoiceEvent>();
     }
 }
 

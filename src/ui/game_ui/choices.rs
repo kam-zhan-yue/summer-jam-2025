@@ -16,6 +16,9 @@ struct PlayerOneChoices;
 #[derive(Component, Debug, Default)]
 struct PlayerTwoChoices;
 
+#[derive(Component, Debug, Default)]
+struct ChoicePopupItem;
+
 impl Plugin for ChoicesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Game), setup);
@@ -32,6 +35,7 @@ fn setup(mut commands: Commands) {
     // Root Node
     commands
         .spawn((
+            Name::new("Choices Popup"),
             ChoicesPopup,
             Node {
                 width: Val::Percent(100.0),
@@ -43,12 +47,14 @@ fn setup(mut commands: Commands) {
         ))
         .with_children(|parent| {
             spawn_player_choices(
+                Name::new("Player One Choices"),
                 parent,
                 PlayerOneChoices,
                 JustifyContent::Start,
                 FlexDirection::Row,
             );
             spawn_player_choices(
+                Name::new("Player Two Choices"),
                 parent,
                 PlayerTwoChoices,
                 JustifyContent::End,
@@ -58,6 +64,7 @@ fn setup(mut commands: Commands) {
 }
 
 fn spawn_player_choices(
+    name: impl Component,
     parent: &mut ChildBuilder,
     player: impl Component,
     justify_content: JustifyContent,
@@ -65,6 +72,7 @@ fn spawn_player_choices(
 ) {
     parent
         .spawn((
+            name,
             player,
             Node {
                 width: Val::Percent(50.0),
@@ -77,6 +85,7 @@ fn spawn_player_choices(
             for i in 0..BEAT_LIMIT {
                 parent
                     .spawn((
+                        ChoicePopupItem,
                         Node {
                             width: Val::Px(75.0),
                             height: Val::Px(75.0),
@@ -97,21 +106,34 @@ fn spawn_player_choices(
 
 fn read_choices(
     mut choice_event_reader: EventReader<ChoiceEvent>,
-    mut player_one_choices: Query<Entity, With<PlayerOneChoices>>,
-    mut player_two_choices: Query<Entity, (With<PlayerTwoChoices>, Without<PlayerOneChoices>)>,
+    player_one_choices: Query<&Children, With<PlayerOneChoices>>,
+    player_two_choices: Query<&Children, With<PlayerTwoChoices>>,
+    choice_popup_items: Query<&Children, With<ChoicePopupItem>>,
+    mut text_query: Query<&mut Text>,
 ) {
-    let Ok(mut player_one) = player_one_choices.get_single_mut() else {
+    let Ok(player_one_children) = player_one_choices.get_single() else {
         return;
     };
-    let Ok(mut player_two) = player_two_choices.get_single_mut() else {
+    let Ok(player_two_children) = player_two_choices.get_single() else {
         return;
     };
     for choice in choice_event_reader.read() {
-        match choice.player {
-            Player::One => update_choices(choice.choice, choice.beat, &mut player_one),
-            Player::Two => update_choices(choice.choice, choice.beat, &mut player_two),
+        let children = match choice.player {
+            Player::One => player_one_children,
+            Player::Two => player_two_children,
+        };
+        if let Some(&choice_popup_item) = children.get(choice.beat as usize) {
+            if let Ok(popup_children) = choice_popup_items.get(choice_popup_item) {
+                if let Some(&child) = popup_children.get(0) {
+                    if let Ok(mut text) = text_query.get_mut(child) {
+                        update_choices(choice.choice, choice.beat, &mut text);
+                    }
+                }
+            }
         }
     }
 }
 
-fn update_choices(choice: Choice, beat: i32, choices: &mut Entity) {}
+fn update_choices(choice: Choice, beat: i32, text: &mut Text) {
+    **text = choice.to_string();
+}
