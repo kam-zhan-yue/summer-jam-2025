@@ -1,4 +1,5 @@
 use crate::schedule::GameSet;
+use crate::state::GameState;
 use bevy::{color::palettes::basic::*, prelude::*};
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
@@ -18,11 +19,14 @@ pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_main_menu);
+        app.add_systems(OnEnter(GameState::Start), spawn_main_menu);
         app.add_systems(
             Update,
-            (handle_buttons, handle_single_player_button).in_set(GameSet::Ui),
+            (handle_buttons, handle_single_player_button)
+                .in_set(GameSet::Ui)
+                .run_if(in_state(GameState::Start)),
         );
+        app.add_systems(OnExit(GameState::Start), despawn_main_menu);
     }
 }
 
@@ -147,12 +151,19 @@ fn handle_buttons(
 
 fn handle_single_player_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<SinglePlayerButton>)>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
-        println!("Single Player");
+        game_state.set(GameState::Game);
+    }
+}
+
+fn despawn_main_menu(mut commands: Commands, query: Query<Entity, With<MainMenu>>) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
     }
 }

@@ -18,7 +18,7 @@ impl Plugin for SchedulePlugin {
             Update,
             (GameSet::Rhythm, GameSet::Combo, GameSet::Resolve)
                 .chain()
-                .run_if(in_state(GameState::InGame)),
+                .run_if(in_state(GameState::Game)),
         );
     }
 }

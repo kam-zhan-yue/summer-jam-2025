@@ -5,6 +5,7 @@ mod camera;
 mod combo;
 mod rhythm;
 mod schedule;
+mod settings;
 mod state;
 mod types;
 mod ui;
@@ -13,6 +14,7 @@ use camera::CameraPlugin;
 use combo::ComboPlugin;
 use rhythm::RhythmPlugin;
 use schedule::SchedulePlugin;
+use settings::SettingsPlugin;
 use state::StatePlugin;
 use ui::UIPlugin;
 
@@ -24,6 +26,7 @@ fn main() {
         .add_plugins(ComboPlugin)
         .add_plugins(SchedulePlugin)
         .add_plugins(StatePlugin)
+        .add_plugins(SettingsPlugin)
         .add_plugins(UIPlugin)
         .add_plugins(WorldInspectorPlugin::new())
         .run();

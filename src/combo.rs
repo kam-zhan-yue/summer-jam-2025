@@ -1,5 +1,7 @@
 use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
 use crate::schedule::GameSet;
+use crate::settings::GameSettings;
+use crate::state::GameState;
 use crate::types::{Location, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
@@ -51,12 +53,20 @@ pub struct ComboPlugin;
 
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_game)
+        app.add_systems(OnEnter(GameState::Game), setup_game)
             .add_systems(
                 Update,
-                (handle_input, update_combo).chain().in_set(GameSet::Combo),
+                (handle_input, update_combo)
+                    .chain()
+                    .in_set(GameSet::Combo)
+                    .run_if(in_state(GameState::Game)),
             )
-            .add_systems(Update, resolve_combo.in_set(GameSet::Resolve));
+            .add_systems(
+                Update,
+                resolve_combo
+                    .in_set(GameSet::Resolve)
+                    .run_if(in_state(GameState::Game)),
+            );
     }
 }
 
@@ -64,7 +74,7 @@ fn setup_game(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    // game: &mut ResMut<Game>,
+    settings: Res<GameSettings>,
 ) {
     let mut player_one_inputs: HashMap<KeyCode, Choice> = HashMap::new();
     player_one_inputs.insert(
