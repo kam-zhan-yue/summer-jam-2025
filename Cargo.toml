@@ -5,4 +5,6 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.15.1"
+bevy-inspector-egui = "0.28.1"
+bevy_dev_tools = "0.15.1"
 bevy_tweening = "0.12.0"
