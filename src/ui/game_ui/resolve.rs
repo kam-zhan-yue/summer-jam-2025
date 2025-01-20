@@ -1,10 +1,15 @@
+use std::f64::consts::LOG2_E;
+
 use crate::combo::GameData;
 use crate::helper::despawn;
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::GameFlow;
+use crate::types::Outcome;
 use bevy::prelude::*;
 
+const LOSE_COLOUR: Color = Color::srgb(0.3, 0.3, 0.3);
+const WIN_COLOUR: Color = Color::srgb(0.0, 0.8, 0.2);
 const RESOLVE_TIME: f32 = 2.;
 const REVEAL_TIME: f32 = 2.;
 
@@ -31,7 +36,7 @@ impl Plugin for ResolvePlugin {
         app.add_systems(OnEnter(GameFlow::Reveal), setup.in_set(GameSet::Ui));
         app.add_systems(
             Update,
-            (handle_resolve_event, handle_timers)
+            (handle_resolve, handle_timers)
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameFlow::Reveal)),
         );
@@ -113,7 +118,7 @@ fn setup(
                 .with_child((
                     Text::new(
                         game_data
-                            .player_one
+                            .player_two
                             .choice_selection
                             .get_choice(rhythm.beat)
                             .to_string(),
@@ -128,7 +133,7 @@ fn setup(
         });
 }
 
-fn handle_resolve_event(
+fn handle_resolve(
     mut commands: Commands,
     rhythm: Res<Rhythm>,
     mut player_one_choice: Query<
@@ -139,34 +144,51 @@ fn handle_resolve_event(
         (&mut BackgroundColor, &mut BorderColor, &Children),
         (With<PlayerTwoChoice>, Without<PlayerOneChoice>),
     >,
-    mut text_query: Query<&mut Text>,
+    mut resolve_query: Query<&mut Resolve>,
+    mut reveal_query: Query<&mut Reveal>,
     game_data: Res<GameData>,
+    mut game_flow: ResMut<NextState<GameFlow>>,
+    time: Res<Time>,
 ) {
-    let Ok(player_one) = player_one_choice.get_single_mut() else {
+    let Ok(mut player_one) = player_one_choice.get_single_mut() else {
         return;
     };
 
-    let Ok(player_two) = player_two_choice.get_single_mut() else {
+    let Ok(mut player_two) = player_two_choice.get_single_mut() else {
         return;
     };
 
-    if let Ok(mut text) = text_query.get_mut(player_one.2[0]) {
-        **text = game_data
-            .player_one
-            .choice_selection
-            .get_choice(rhythm.beat)
-            .to_string();
+    if let Ok(mut resolve) = resolve_query.get_single_mut() {
+        resolve.timer.tick(time.delta());
+        if resolve.timer.just_finished() {
+            let result = game_data.get_result(rhythm.beat);
+            println!("{:?}", result);
+            match result.outcome {
+                Outcome::Draw => {
+                    *player_one.0 = LOSE_COLOUR.into();
+                    *player_two.0 = LOSE_COLOUR.into();
+                }
+                Outcome::PlayerOne => {
+                    *player_one.0 = WIN_COLOUR.into();
+                    *player_two.0 = LOSE_COLOUR.into();
+                }
+                Outcome::PlayerTwo => {
+                    *player_one.0 = LOSE_COLOUR.into();
+                    *player_two.0 = WIN_COLOUR.into();
+                }
+            }
+            commands.spawn(Reveal {
+                timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
+            });
+        }
     }
-    if let Ok(mut text) = text_query.get_mut(player_two.2[0]) {
-        **text = game_data
-            .player_two
-            .choice_selection
-            .get_choice(rhythm.beat)
-            .to_string();
+    if let Ok(mut reveal) = reveal_query.get_single_mut() {
+        reveal.timer.tick(time.delta());
+        // Transition to the next turn
+        if reveal.timer.just_finished() {
+            game_flow.set(GameFlow::Title);
+        }
     }
-    commands.spawn(Reveal {
-        timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
-    });
 }
 
 fn handle_timers(

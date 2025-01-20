@@ -49,6 +49,11 @@ pub struct GameData {
 }
 
 impl GameData {
+    pub fn reset(&mut self) {
+        self.player_one.choice_selection = ChoiceSelection::default();
+        self.player_two.choice_selection = ChoiceSelection::default();
+    }
+
     pub fn get_winner(&self) -> Outcome {
         println!("=========RESOLVE=========");
         let mut map: HashMap<Outcome, i32> = HashMap::new();
@@ -285,10 +290,10 @@ fn process_input(
     }
 
     if let Some(choice) = selected_choice {
-        if player_data.choice_selection.tool == Choice::None && beat == 0 {
+        if player_data.choice_selection.tool != choice.tool && beat == 0 {
             player_data.choice_selection.tool = choice.tool;
             choice_event_writer.send(ChoiceEvent::new(choice.tool, player, beat));
-        } else if player_data.choice_selection.location == Choice::None && beat == 1 {
+        } else if player_data.choice_selection.location != choice.location && beat == 1 {
             player_data.choice_selection.location = choice.location;
             choice_event_writer.send(ChoiceEvent::new(choice.location, player, beat));
         }
@@ -300,9 +305,7 @@ fn enter_resolve(mut game_state: ResMut<NextState<GameState>>, mut game_data: Re
 
     update_outcome(&mut game_data, winner, &mut game_state);
 
-    // Reset the player choices
-    game_data.player_one.choice_selection = ChoiceSelection::default();
-    game_data.player_two.choice_selection = ChoiceSelection::default();
+    game_data.reset();
 }
 
 fn update_outcome(
