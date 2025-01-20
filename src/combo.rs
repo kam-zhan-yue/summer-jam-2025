@@ -11,31 +11,33 @@ const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
 const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
 const MAX_HEALTH: i32 = 1;
 
-#[derive(Debug, Default)]
-pub struct Choice {
-    pub tool: Tool,
-    pub location: Location,
-}
-
-#[derive(Debug)]
-pub enum ChoiceEnum {
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone, PartialOrd)]
+pub enum Choice {
+    #[default]
+    None,
     Tool(Tool),
     Location(Location),
+}
+
+#[derive(Debug, Default, Copy, Clone)]
+pub struct ChoiceSelection {
+    tool: Choice,
+    location: Choice,
 }
 
 #[derive(Component, Debug, Default)]
 pub struct PlayerData {
     pub health: i32,
-    pub map: HashMap<KeyCode, Choice>,
-    pub choice: Choice,
+    pub map: HashMap<KeyCode, ChoiceSelection>,
+    pub choice_selection: ChoiceSelection,
 }
 
 impl PlayerData {
-    fn new(map: HashMap<KeyCode, Choice>) -> Self {
+    fn new(map: HashMap<KeyCode, ChoiceSelection>) -> Self {
         Self {
             health: MAX_HEALTH,
             map,
-            choice: Choice::default(),
+            choice_selection: ChoiceSelection::default(),
         }
     }
 }
@@ -88,49 +90,49 @@ fn setup_game(
     mut materials: ResMut<Assets<ColorMaterial>>,
     settings: Res<GameSettings>,
 ) {
-    let mut player_one_inputs: HashMap<KeyCode, Choice> = HashMap::new();
+    let mut player_one_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
     player_one_inputs.insert(
         KeyCode::KeyA,
-        Choice {
-            tool: Tool::Toilet,
-            location: Location::Classroom,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Toilet),
+            location: Choice::Location(Location::Classroom),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyS,
-        Choice {
-            tool: Tool::Underwear,
-            location: Location::Gymnasium,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Underwear),
+            location: Choice::Location(Location::Gymnasium),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyD,
-        Choice {
-            tool: Tool::Lighter,
-            location: Location::Library,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Lighter),
+            location: Choice::Location(Location::Library),
         },
     );
 
-    let mut player_two_inputs: HashMap<KeyCode, Choice> = HashMap::new();
+    let mut player_two_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
     player_two_inputs.insert(
         KeyCode::KeyJ,
-        Choice {
-            tool: Tool::Toilet,
-            location: Location::Classroom,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Toilet),
+            location: Choice::Location(Location::Classroom),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyK,
-        Choice {
-            tool: Tool::Underwear,
-            location: Location::Gymnasium,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Underwear),
+            location: Choice::Location(Location::Gymnasium),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyL,
-        Choice {
-            tool: Tool::Lighter,
-            location: Location::Library,
+        ChoiceSelection {
+            tool: Choice::Tool(Tool::Lighter),
+            location: Choice::Location(Location::Library),
         },
     );
 
@@ -167,11 +169,11 @@ fn handle_input(
         }
 
         if let Some(choice) = selected_choice {
-            if player.choice.tool == Tool::None && rhythm.beat == 0 {
-                player.choice.tool = choice.tool;
+            if player.choice_selection.tool == Choice::None && rhythm.beat == 0 {
+                player.choice_selection.tool = choice.tool;
                 // println!("{:?}", player.choice.tool);
-            } else if player.choice.location == Location::None && rhythm.beat == 1 {
-                player.choice.location = choice.location;
+            } else if player.choice_selection.location == Choice::None && rhythm.beat == 1 {
+                player.choice_selection.location = choice.location;
                 // println!("{:?}", player.choice.location);
             }
         }
@@ -193,12 +195,12 @@ fn update_combo(
         let outcome = if beat.0 == 1 {
             println!("=========TOOL=========");
             resolve(&mut player_one, &mut player_two, |player| {
-                &player.choice.tool
+                &player.choice_selection.tool
             })
         } else if beat.0 == 2 {
             println!("=========LOCATION=========");
             resolve(&mut player_one, &mut player_two, |player| {
-                &player.choice.location
+                &player.choice_selection.location
             })
         } else {
             Outcome::Draw
@@ -247,10 +249,10 @@ fn resolve_combo(
         let mut map: HashMap<Outcome, i32> = HashMap::new();
 
         let tool = resolve(&mut player_one, &mut player_two, |player| {
-            &player.choice.tool
+            &player.choice_selection.tool
         });
         let location = resolve(&mut player_one, &mut player_two, |player| {
-            &player.choice.location
+            &player.choice_selection.location
         });
 
         *map.entry(tool).or_insert(0) += 1;
@@ -271,8 +273,8 @@ fn resolve_combo(
         update_outcome(&mut player_one, &mut player_two, winner, &mut game_state);
 
         // Reset the player choices
-        player_one.choice = Choice::default();
-        player_two.choice = Choice::default();
+        player_one.choice_selection = ChoiceSelection::default();
+        player_two.choice_selection = ChoiceSelection::default();
     }
 }
 
