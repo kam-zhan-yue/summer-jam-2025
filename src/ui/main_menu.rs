@@ -55,7 +55,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_children(|parent| {
                     // Text
                     parent.spawn((
-                        Text::new("Swirlie, Wedgie, Willie!"),
+                        Text::new("Swirlie, Wedgie, Whirlie!"),
                         TextFont {
                             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                             font_size: 50.0,

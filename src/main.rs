@@ -11,6 +11,7 @@ mod state;
 mod types;
 mod ui;
 
+use bevy_tweening::TweeningPlugin;
 use camera::CameraPlugin;
 use combo::ComboPlugin;
 use rhythm::RhythmPlugin;
@@ -29,6 +30,7 @@ fn main() {
         .add_plugins(StatePlugin)
         .add_plugins(SettingsPlugin)
         .add_plugins(UIPlugin)
+        .add_plugins(TweeningPlugin)
         // .add_plugins(WorldInspectorPlugin::new())
         .run();
 }

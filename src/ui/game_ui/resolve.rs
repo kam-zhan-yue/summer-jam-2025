@@ -1,4 +1,4 @@
-use crate::combo::{GameData, ResolveEvent};
+use crate::combo::GameData;
 use crate::helper::despawn;
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
@@ -6,9 +6,15 @@ use crate::state::GameFlow;
 use bevy::prelude::*;
 
 const RESOLVE_TIME: f32 = 2.;
+const REVEAL_TIME: f32 = 2.;
 
 #[derive(Component, Debug)]
 struct Resolve {
+    timer: Timer,
+}
+
+#[derive(Component, Debug)]
+struct Reveal {
     timer: Timer,
 }
 
@@ -25,15 +31,23 @@ impl Plugin for ResolvePlugin {
         app.add_systems(OnEnter(GameFlow::Reveal), setup.in_set(GameSet::Ui));
         app.add_systems(
             Update,
-            handle_resolve
+            (handle_resolve_event, handle_timers)
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameFlow::Reveal)),
         );
-        app.add_systems(OnExit(GameFlow::Title), despawn::<Resolve>);
+        app.add_systems(
+            OnExit(GameFlow::Title),
+            (despawn::<Resolve>, despawn::<Reveal>),
+        );
     }
 }
 
-fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+    game_data: Res<GameData>,
+    rhythm: Res<Rhythm>,
+) {
     // Root Node
     commands
         .spawn((
@@ -67,7 +81,13 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     BackgroundColor(Color::WHITE),
                 ))
                 .with_child((
-                    Text::new("Player One"),
+                    Text::new(
+                        game_data
+                            .player_one
+                            .choice_selection
+                            .get_choice(rhythm.beat)
+                            .to_string(),
+                    ),
                     TextFont {
                         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                         font_size: 16.0,
@@ -91,7 +111,13 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     BackgroundColor(Color::WHITE),
                 ))
                 .with_child((
-                    Text::new("Player Two"),
+                    Text::new(
+                        game_data
+                            .player_one
+                            .choice_selection
+                            .get_choice(rhythm.beat)
+                            .to_string(),
+                    ),
                     TextFont {
                         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                         font_size: 16.0,
@@ -102,7 +128,8 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         });
 }
 
-fn handle_resolve(
+fn handle_resolve_event(
+    mut commands: Commands,
     rhythm: Res<Rhythm>,
     mut player_one_choice: Query<
         (&mut BackgroundColor, &mut BorderColor, &Children),
@@ -136,5 +163,32 @@ fn handle_resolve(
             .choice_selection
             .get_choice(rhythm.beat)
             .to_string();
+    }
+    commands.spawn(Reveal {
+        timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
+    });
+}
+
+fn handle_timers(
+    mut commands: Commands,
+    mut resolve_query: Query<&mut Resolve>,
+    mut reveal_query: Query<&mut Reveal>,
+    time: Res<Time>,
+    mut game_flow: ResMut<NextState<GameFlow>>,
+) {
+    if let Ok(mut resolve) = resolve_query.get_single_mut() {
+        resolve.timer.tick(time.delta());
+        if resolve.timer.just_finished() {
+            commands.spawn(Reveal {
+                timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
+            });
+        }
+    }
+    if let Ok(mut reveal) = reveal_query.get_single_mut() {
+        reveal.timer.tick(time.delta());
+        // Transition to the next turn
+        if reveal.timer.just_finished() {
+            game_flow.set(GameFlow::Title);
+        }
     }
 }
