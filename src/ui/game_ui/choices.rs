@@ -1,6 +1,8 @@
+use crate::combo::ChoiceEvent;
 use crate::rhythm::BEAT_LIMIT;
 use crate::schedule::GameSet;
 use crate::state::GameState;
+use crate::types::{Choice, Player};
 use bevy::prelude::*;
 
 pub struct ChoicesPlugin;
@@ -19,7 +21,7 @@ impl Plugin for ChoicesPlugin {
         app.add_systems(OnEnter(GameState::Game), setup);
         app.add_systems(
             Update,
-            update_choices
+            read_choices
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Game)),
         );
@@ -93,4 +95,23 @@ fn spawn_player_choices(
         });
 }
 
-fn update_choices() {}
+fn read_choices(
+    mut choice_event_reader: EventReader<ChoiceEvent>,
+    mut player_one_choices: Query<Entity, With<PlayerOneChoices>>,
+    mut player_two_choices: Query<Entity, (With<PlayerTwoChoices>, Without<PlayerOneChoices>)>,
+) {
+    let Ok(mut player_one) = player_one_choices.get_single_mut() else {
+        return;
+    };
+    let Ok(mut player_two) = player_two_choices.get_single_mut() else {
+        return;
+    };
+    for choice in choice_event_reader.read() {
+        match choice.player {
+            Player::One => update_choices(choice.choice, choice.beat, &mut player_one),
+            Player::Two => update_choices(choice.choice, choice.beat, &mut player_two),
+        }
+    }
+}
+
+fn update_choices(choice: Choice, beat: i32, choices: &mut Entity) {}

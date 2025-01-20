@@ -6,6 +6,14 @@ pub enum Player {
     Two,
 }
 
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone, PartialOrd)]
+pub enum Choice {
+    #[default]
+    None,
+    Tool(Tool),
+    Location(Location),
+}
+
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
 pub enum Tool {
     #[default]

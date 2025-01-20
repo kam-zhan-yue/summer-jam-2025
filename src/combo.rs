@@ -2,7 +2,7 @@ use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
 use crate::state::GameState;
-use crate::types::{Location, Player, Tool};
+use crate::types::{Choice, Location, Player, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -10,14 +10,6 @@ const PLAYER_LENGTH: f32 = 25.;
 const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
 const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
 const MAX_HEALTH: i32 = 1;
-
-#[derive(Debug, Default, Eq, PartialEq, Copy, Clone, PartialOrd)]
-pub enum Choice {
-    #[default]
-    None,
-    Tool(Tool),
-    Location(Location),
-}
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
@@ -59,8 +51,19 @@ pub struct PlayerTwo;
 
 #[derive(Event, Debug)]
 pub struct ChoiceEvent {
-    choice: Choice,
-    player: Player,
+    pub choice: Choice,
+    pub player: Player,
+    pub beat: i32,
+}
+
+impl ChoiceEvent {
+    fn new(choice: Choice, player: Player, beat: i32) -> Self {
+        Self {
+            choice,
+            player,
+            beat,
+        }
+    }
 }
 
 pub struct ComboPlugin;
@@ -154,28 +157,57 @@ fn setup_game(
 }
 
 fn handle_input(
-    mut query: Query<&mut PlayerData>,
+    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
+    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
     input: Res<ButtonInput<KeyCode>>,
     rhythm: Res<Rhythm>,
+    mut choice_event_writer: EventWriter<ChoiceEvent>,
 ) {
-    for mut player in query.iter_mut() {
-        let mut selected_choice = None;
-        // Get the selected data
-        for (key, choice) in &player.map {
-            if input.pressed(*key) {
-                selected_choice = Some(choice);
-                break;
-            }
-        }
+    let Ok(mut player_one) = player_one_query.get_single_mut() else {
+        return;
+    };
+    let Ok(mut player_two) = player_two_query.get_single_mut() else {
+        return;
+    };
+    process_input(
+        &mut player_one,
+        Player::One,
+        &input,
+        rhythm.beat,
+        &mut choice_event_writer,
+    );
+    process_input(
+        &mut player_two,
+        Player::Two,
+        &input,
+        rhythm.beat,
+        &mut choice_event_writer,
+    );
+}
 
-        if let Some(choice) = selected_choice {
-            if player.choice_selection.tool == Choice::None && rhythm.beat == 0 {
-                player.choice_selection.tool = choice.tool;
-                // println!("{:?}", player.choice.tool);
-            } else if player.choice_selection.location == Choice::None && rhythm.beat == 1 {
-                player.choice_selection.location = choice.location;
-                // println!("{:?}", player.choice.location);
-            }
+fn process_input(
+    player_data: &mut PlayerData,
+    player: Player,
+    input: &Res<ButtonInput<KeyCode>>,
+    beat: i32,
+    choice_event_writer: &mut EventWriter<ChoiceEvent>,
+) {
+    let mut selected_choice = None;
+    // Get the selected data
+    for (key, choice) in &player_data.map {
+        if input.pressed(*key) {
+            selected_choice = Some(choice);
+            break;
+        }
+    }
+
+    if let Some(choice) = selected_choice {
+        if player_data.choice_selection.tool == Choice::None && beat == 0 {
+            player_data.choice_selection.tool = choice.tool;
+            choice_event_writer.send(ChoiceEvent::new(choice.tool, player, beat));
+        } else if player_data.choice_selection.location == Choice::None && beat == 1 {
+            player_data.choice_selection.location = choice.location;
+            choice_event_writer.send(ChoiceEvent::new(choice.location, player, beat));
         }
     }
 }
