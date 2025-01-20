@@ -3,6 +3,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod camera;
 mod combo;
+mod helper;
 mod rhythm;
 mod schedule;
 mod settings;

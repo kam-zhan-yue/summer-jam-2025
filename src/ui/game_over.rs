@@ -4,26 +4,23 @@ use crate::state::GameState;
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
-pub struct MainMenu;
+pub struct GameOver;
 
 #[derive(Component, Debug)]
-pub struct SinglePlayerButton;
+pub struct TitleButton;
 
-#[derive(Component, Debug)]
-pub struct TwoPlayerButton;
+pub struct GameOverPlugin;
 
-pub struct MainMenuPlugin;
-
-impl Plugin for MainMenuPlugin {
+impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Start), spawn_main_menu);
+        app.add_systems(OnEnter(GameState::GameOver), spawn_main_menu);
         app.add_systems(
             Update,
-            (handle_buttons, handle_single_player_button)
+            (handle_buttons, handle_title_button)
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameState::Start)),
+                .run_if(in_state(GameState::GameOver)),
         );
-        app.add_systems(OnExit(GameState::Start), despawn::<MainMenu>);
+        app.add_systems(OnExit(GameState::GameOver), despawn::<GameOver>);
     }
 }
 
@@ -41,7 +38,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 column_gap: Val::Px(8.),
                 ..default()
             },
-            MainMenu,
+            GameOver,
         ))
         .with_children(|parent| {
             // Title
@@ -54,7 +51,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_children(|parent| {
                     // Text
                     parent.spawn((
-                        Text::new("Swirlie, Wedgie, Willie!"),
+                        Text::new("Game Over!"),
                         TextFont {
                             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                             font_size: 50.0,
@@ -63,10 +60,10 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         Label,
                     ));
                 });
-            // Single Player Button
+            // Title Player Button
             parent
                 .spawn((
-                    SinglePlayerButton,
+                    TitleButton,
                     Button,
                     Node {
                         width: Val::Px(150.0),
@@ -83,35 +80,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     BackgroundColor(NORMAL_BUTTON),
                 ))
                 .with_child((
-                    Text::new("1 Player"),
-                    TextFont {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                        font_size: 22.0,
-                        ..default()
-                    },
-                    TextColor(Color::srgb(0.9, 0.9, 0.9)),
-                ));
-            // Two Player Button
-            parent
-                .spawn((
-                    TwoPlayerButton,
-                    Button,
-                    Node {
-                        width: Val::Px(150.0),
-                        height: Val::Px(40.0),
-                        border: UiRect::all(Val::Px(1.0)),
-                        // horizontally center child text
-                        justify_content: JustifyContent::Center,
-                        // vertically center child text
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::all(Val::Px(5.0)),
-                    BackgroundColor(NORMAL_BUTTON),
-                ))
-                .with_child((
-                    Text::new("2 Players"),
+                    Text::new("Back to Title"),
                     TextFont {
                         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                         font_size: 22.0,
@@ -122,8 +91,8 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn handle_single_player_button(
-    interaction_query: Query<&Interaction, (Changed<Interaction>, With<SinglePlayerButton>)>,
+fn handle_title_button(
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<TitleButton>)>,
     mut game_state: ResMut<NextState<GameState>>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
@@ -131,6 +100,6 @@ fn handle_single_player_button(
     };
 
     if *interaction == Interaction::Pressed {
-        game_state.set(GameState::Game);
+        game_state.set(GameState::Start);
     }
 }

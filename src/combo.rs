@@ -9,7 +9,7 @@ use std::collections::HashMap;
 const PLAYER_LENGTH: f32 = 25.;
 const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
 const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
-const MAX_HEALTH: i32 = 100;
+const MAX_HEALTH: i32 = 1;
 
 #[derive(Debug, Default)]
 pub struct Choice {
@@ -53,20 +53,20 @@ pub struct ComboPlugin;
 
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Game), setup_game)
-            .add_systems(
-                Update,
-                (handle_input, update_combo)
-                    .chain()
-                    .in_set(GameSet::Combo)
-                    .run_if(in_state(GameState::Game)),
-            )
-            .add_systems(
-                Update,
-                resolve_combo
-                    .in_set(GameSet::Resolve)
-                    .run_if(in_state(GameState::Game)),
-            );
+        app.add_systems(OnEnter(GameState::Game), setup_game);
+        app.add_systems(
+            Update,
+            (handle_input, update_combo)
+                .chain()
+                .in_set(GameSet::Combo)
+                .run_if(in_state(GameState::Game)),
+        );
+        app.add_systems(
+            Update,
+            resolve_combo
+                .in_set(GameSet::Resolve)
+                .run_if(in_state(GameState::Game)),
+        );
     }
 }
 
@@ -221,6 +221,7 @@ fn resolve_combo(
     mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
     mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
     mut resolve_event_reader: EventReader<ResolveEvent>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     for _ in resolve_event_reader.read() {
         let Ok(mut player_one) = player_one_query.get_single_mut() else {
@@ -255,7 +256,7 @@ fn resolve_combo(
         };
         println!("Overall Winner is: {:?}", winner);
 
-        update_outcome(&mut player_one, &mut player_two, winner);
+        update_outcome(&mut player_one, &mut player_two, winner, &mut game_state);
 
         // Reset the player choices
         player_one.choice = Choice::default();
@@ -263,7 +264,12 @@ fn resolve_combo(
     }
 }
 
-fn update_outcome(player_one: &mut PlayerData, player_two: &mut PlayerData, outcome: Outcome) {
+fn update_outcome(
+    player_one: &mut PlayerData,
+    player_two: &mut PlayerData,
+    outcome: Outcome,
+    game_state: &mut ResMut<NextState<GameState>>,
+) {
     match outcome {
         Outcome::PlayerOne => {
             player_two.health -= 1;
@@ -273,13 +279,19 @@ fn update_outcome(player_one: &mut PlayerData, player_two: &mut PlayerData, outc
         }
         Outcome::Draw => (),
     }
-    check_end_game(player_one, player_two);
+    check_end_game(player_one, player_two, game_state);
 }
 
-fn check_end_game(player_one: &mut PlayerData, player_two: &mut PlayerData) {
+fn check_end_game(
+    player_one: &mut PlayerData,
+    player_two: &mut PlayerData,
+    game_state: &mut ResMut<NextState<GameState>>,
+) {
     if player_one.health <= 0 {
         println!("Player Two Wins The Game!");
+        game_state.set(GameState::GameOver);
     } else if player_two.health <= 0 {
         println!("Player One Wins The Game!");
+        game_state.set(GameState::GameOver);
     }
 }
