@@ -6,7 +6,7 @@ const BEAT_TIME: f32 = 1.;
 
 #[derive(Resource, Debug)]
 pub struct Rhythm {
-    timer: Timer,
+    pub timer: Timer,
     pub beat: i32,
 }
 
