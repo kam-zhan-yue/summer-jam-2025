@@ -1,52 +1,59 @@
-use crate::rhythm::{BeatEvent, ResolveEvent, Rhythm};
+use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
-use crate::state::GameState;
-use crate::types::{Choice, Location, Player, Tool};
+use crate::state::{GameFlow, GameState};
+use crate::types::{Choice, Location, Outcome, Player, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-const PLAYER_LENGTH: f32 = 25.;
-const PLAYER_ONE_COLOUR: Color = Color::srgb(1., 0., 0.);
-const PLAYER_TWO_COLOUR: Color = Color::srgb(0., 1., 0.);
+const PLAYER_LENGTH: f32 = 1.4;
 const MAX_HEALTH: i32 = 1;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
-    tool: Choice,
-    location: Choice,
+    pub tool: Choice,
+    pub location: Choice,
 }
 
-#[derive(Component, Debug, Default)]
-pub struct PlayerData {
-    pub health: i32,
-    pub map: HashMap<KeyCode, ChoiceSelection>,
-    pub choice_selection: ChoiceSelection,
-}
-
-impl PlayerData {
-    fn new(map: HashMap<KeyCode, ChoiceSelection>) -> Self {
-        Self {
-            health: MAX_HEALTH,
-            map,
-            choice_selection: ChoiceSelection::default(),
+impl ChoiceSelection {
+    pub fn get_choice(self, beat: i32) -> Choice {
+        match beat {
+            1 => self.tool,
+            2 => self.location,
+            _ => Choice::None,
         }
     }
 }
 
-#[derive(Eq, Hash, PartialEq, Debug)]
-enum Outcome {
-    PlayerOne,
-    PlayerTwo,
-    Draw,
+#[derive(Component, Debug, Default)]
+pub struct PlayerInput {
+    pub map: HashMap<KeyCode, ChoiceSelection>,
+}
+
+impl PlayerInput {
+    fn new(map: HashMap<KeyCode, ChoiceSelection>) -> Self {
+        Self { map }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct PlayerData {
+    pub choice_selection: ChoiceSelection,
+    pub health: i32,
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct GameData {
+    pub player_one: PlayerData,
+    pub player_two: PlayerData,
 }
 
 #[derive(Component, Debug)]
-#[require(PlayerData)]
+#[require(PlayerInput)]
 pub struct PlayerOne;
 
 #[derive(Component, Debug)]
-#[require(PlayerData)]
+#[require(PlayerInput)]
 pub struct PlayerTwo;
 
 #[derive(Event, Debug)]
@@ -66,33 +73,56 @@ impl ChoiceEvent {
     }
 }
 
+#[derive(Event, Debug)]
+pub struct ResolveEvent(ResolveResult);
+
+impl ResolveEvent {
+    fn new(result: ResolveResult) -> Self {
+        Self(result)
+    }
+}
+
+#[derive(Debug)]
+pub struct ResolveResult {
+    pub outcome: Outcome,
+    pub choice: Choice,
+}
+
+impl ResolveResult {
+    fn new(outcome: Outcome, choice: Choice) -> Self {
+        Self { outcome, choice }
+    }
+}
+
 pub struct ComboPlugin;
 
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<GameData>();
         app.add_systems(OnEnter(GameState::Game), setup_game);
         app.add_systems(
             Update,
-            (handle_input, update_combo)
-                .chain()
-                .in_set(GameSet::Combo)
-                .run_if(in_state(GameState::Game)),
-        );
-        app.add_systems(
-            Update,
-            resolve_combo
+            handle_input
                 .in_set(GameSet::Resolve)
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_systems(
+            OnEnter(GameFlow::Reveal),
+            enter_reveal.in_set(GameSet::Resolve),
+        );
+        app.add_systems(
+            OnEnter(GameFlow::EndTurn),
+            enter_resolve.in_set(GameSet::Resolve),
+        );
         app.add_event::<ChoiceEvent>();
+        app.add_event::<ResolveEvent>();
     }
 }
 
 fn setup_game(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     settings: Res<GameSettings>,
+    asset_server: ResMut<AssetServer>,
 ) {
     let mut player_one_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
     player_one_inputs.insert(
@@ -141,44 +171,45 @@ fn setup_game(
     );
 
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::default())),
-        MeshMaterial2d(materials.add(PLAYER_ONE_COLOUR)),
-        Transform::from_xyz(-100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Transform::from_xyz(-300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerOne,
-        PlayerData::new(player_one_inputs),
+        PlayerInput::new(player_one_inputs),
+        Sprite::from_image(asset_server.load("sprites/stick_left.png")),
     ));
 
     commands.spawn((
-        Mesh2d(meshes.add(Triangle2d::default())),
-        MeshMaterial2d(materials.add(PLAYER_TWO_COLOUR)),
-        Transform::from_xyz(100., 0., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Transform::from_xyz(300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerTwo,
-        PlayerData::new(player_two_inputs),
+        PlayerInput::new(player_two_inputs),
+        Sprite::from_image(asset_server.load("sprites/stick_right.png")),
     ));
 }
 
 fn handle_input(
-    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
-    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut player_one_query: Query<&mut PlayerInput, With<PlayerOne>>,
+    mut player_two_query: Query<&mut PlayerInput, (With<PlayerTwo>, Without<PlayerOne>)>,
     input: Res<ButtonInput<KeyCode>>,
     rhythm: Res<Rhythm>,
+    mut game_data: ResMut<GameData>,
     mut choice_event_writer: EventWriter<ChoiceEvent>,
 ) {
-    let Ok(mut player_one) = player_one_query.get_single_mut() else {
+    let Ok(player_one_input) = player_one_query.get_single_mut() else {
         return;
     };
-    let Ok(mut player_two) = player_two_query.get_single_mut() else {
+    let Ok(player_two_input) = player_two_query.get_single_mut() else {
         return;
     };
     process_input(
-        &mut player_one,
+        &player_one_input,
+        &mut game_data.player_one,
         Player::One,
         &input,
         rhythm.beat,
         &mut choice_event_writer,
     );
     process_input(
-        &mut player_two,
+        &player_two_input,
+        &mut game_data.player_two,
         Player::Two,
         &input,
         rhythm.beat,
@@ -187,6 +218,7 @@ fn handle_input(
 }
 
 fn process_input(
+    player_input: &PlayerInput,
     player_data: &mut PlayerData,
     player: Player,
     input: &Res<ButtonInput<KeyCode>>,
@@ -195,7 +227,7 @@ fn process_input(
 ) {
     let mut selected_choice = None;
     // Get the selected data
-    for (key, choice) in &player_data.map {
+    for (key, choice) in &player_input.map {
         if input.pressed(*key) {
             selected_choice = Some(choice);
             break;
@@ -213,131 +245,106 @@ fn process_input(
     }
 }
 
-fn update_combo(
-    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
-    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
-    mut beat_event_reader: EventReader<BeatEvent>,
-) {
-    let Ok(mut player_one) = player_one_query.get_single_mut() else {
-        return;
-    };
-    let Ok(mut player_two) = player_two_query.get_single_mut() else {
-        return;
-    };
-    for beat in beat_event_reader.read() {
-        let outcome = if beat.0 == 1 {
-            println!("=========TOOL=========");
-            resolve(&mut player_one, &mut player_two, |player| {
-                &player.choice_selection.tool
-            })
-        } else if beat.0 == 2 {
-            println!("=========LOCATION=========");
-            resolve(&mut player_one, &mut player_two, |player| {
-                &player.choice_selection.location
-            })
-        } else {
-            Outcome::Draw
-        };
-
-        match outcome {
-            Outcome::PlayerOne => println!("Player One Wins"),
-            Outcome::PlayerTwo => println!("Player Two Wins"),
-            Outcome::Draw => println!("Draw"),
+pub fn resolve(game_data: &mut GameData, get_choice: fn(&PlayerData) -> Choice) -> ResolveResult {
+    let choice_one = get_choice(&game_data.player_one);
+    let choice_two = get_choice(&game_data.player_two);
+    println!("Player One: {:?} Player Two: {:?} ", choice_one, choice_two);
+    if choice_one > choice_two {
+        ResolveResult {
+            outcome: Outcome::PlayerOne,
+            choice: choice_one.clone(),
+        }
+    } else if choice_one < choice_two {
+        ResolveResult {
+            outcome: Outcome::PlayerTwo,
+            choice: choice_two.clone(),
+        }
+    } else {
+        ResolveResult {
+            outcome: Outcome::Draw,
+            choice: Choice::None,
         }
     }
 }
 
-fn resolve<T: std::fmt::Debug + PartialOrd>(
-    player_one: &mut PlayerData,
-    player_two: &mut PlayerData,
-    get_choice: fn(&PlayerData) -> &T,
-) -> Outcome {
-    let choice_one = get_choice(player_one);
-    let choice_two = get_choice(player_two);
-    println!("Player One: {:?} Player Two: {:?} ", choice_one, choice_two);
-    if choice_one > choice_two {
+fn enter_reveal(
+    rhythm: Res<Rhythm>,
+    mut resolve_event_writer: EventWriter<ResolveEvent>,
+    mut game_data: ResMut<GameData>,
+) {
+    let result = if rhythm.beat == 1 {
+        println!("=========TOOL=========");
+        resolve(&mut game_data, |player| player.choice_selection.tool)
+    } else if rhythm.beat == 2 {
+        println!("=========LOCATION=========");
+        resolve(&mut game_data, |player| player.choice_selection.location)
+    } else {
+        ResolveResult {
+            outcome: Outcome::Draw,
+            choice: Choice::None,
+        }
+    };
+
+    match result.outcome {
+        Outcome::PlayerOne => println!("Player One Wins"),
+        Outcome::PlayerTwo => println!("Player Two Wins"),
+        Outcome::Draw => println!("Draw"),
+    }
+
+    // resolve_event_writer.send(ResolveEvent::new(result));
+}
+
+fn enter_resolve(mut game_state: ResMut<NextState<GameState>>, mut game_data: ResMut<GameData>) {
+    println!("=========RESOLVE=========");
+    let mut map: HashMap<Outcome, i32> = HashMap::new();
+
+    let tool = resolve(&mut game_data, |player| player.choice_selection.tool);
+    let location = resolve(&mut game_data, |player| player.choice_selection.tool);
+
+    *map.entry(tool.outcome).or_insert(0) += 1;
+    *map.entry(location.outcome).or_insert(0) += 1;
+
+    let player_one_wins = map.get(&Outcome::PlayerOne).unwrap_or(&0);
+    let player_two_wins = map.get(&Outcome::PlayerTwo).unwrap_or(&0);
+
+    let winner = if player_one_wins > player_two_wins {
         Outcome::PlayerOne
-    } else if choice_one < choice_two {
+    } else if player_one_wins < player_two_wins {
         Outcome::PlayerTwo
     } else {
         Outcome::Draw
-    }
-}
+    };
+    println!("Overall Winner is: {:?}", winner);
 
-fn resolve_combo(
-    mut player_one_query: Query<&mut PlayerData, With<PlayerOne>>,
-    mut player_two_query: Query<&mut PlayerData, (With<PlayerTwo>, Without<PlayerOne>)>,
-    mut resolve_event_reader: EventReader<ResolveEvent>,
-    mut game_state: ResMut<NextState<GameState>>,
-) {
-    for _ in resolve_event_reader.read() {
-        let Ok(mut player_one) = player_one_query.get_single_mut() else {
-            return;
-        };
-        let Ok(mut player_two) = player_two_query.get_single_mut() else {
-            return;
-        };
+    update_outcome(&mut game_data, winner, &mut game_state);
 
-        println!("=========RESOLVE=========");
-        let mut map: HashMap<Outcome, i32> = HashMap::new();
-
-        let tool = resolve(&mut player_one, &mut player_two, |player| {
-            &player.choice_selection.tool
-        });
-        let location = resolve(&mut player_one, &mut player_two, |player| {
-            &player.choice_selection.location
-        });
-
-        *map.entry(tool).or_insert(0) += 1;
-        *map.entry(location).or_insert(0) += 1;
-
-        let player_one_wins = map.get(&Outcome::PlayerOne).unwrap_or(&0);
-        let player_two_wins = map.get(&Outcome::PlayerTwo).unwrap_or(&0);
-
-        let winner = if player_one_wins > player_two_wins {
-            Outcome::PlayerOne
-        } else if player_one_wins < player_two_wins {
-            Outcome::PlayerTwo
-        } else {
-            Outcome::Draw
-        };
-        println!("Overall Winner is: {:?}", winner);
-
-        update_outcome(&mut player_one, &mut player_two, winner, &mut game_state);
-
-        // Reset the player choices
-        player_one.choice_selection = ChoiceSelection::default();
-        player_two.choice_selection = ChoiceSelection::default();
-    }
+    // Reset the player choices
+    game_data.player_one.choice_selection = ChoiceSelection::default();
+    game_data.player_two.choice_selection = ChoiceSelection::default();
 }
 
 fn update_outcome(
-    player_one: &mut PlayerData,
-    player_two: &mut PlayerData,
+    game_data: &mut ResMut<GameData>,
     outcome: Outcome,
     game_state: &mut ResMut<NextState<GameState>>,
 ) {
     match outcome {
         Outcome::PlayerOne => {
-            player_two.health -= 1;
+            game_data.player_two.health -= 1;
         }
         Outcome::PlayerTwo => {
-            player_one.health -= 1;
+            game_data.player_one.health -= 1;
         }
         Outcome::Draw => (),
     }
-    check_end_game(player_one, player_two, game_state);
+    check_end_game(game_data, game_state);
 }
 
-fn check_end_game(
-    player_one: &mut PlayerData,
-    player_two: &mut PlayerData,
-    game_state: &mut ResMut<NextState<GameState>>,
-) {
-    if player_one.health <= 0 {
+fn check_end_game(game_data: &mut GameData, game_state: &mut ResMut<NextState<GameState>>) {
+    if game_data.player_one.health <= 0 {
         println!("Player Two Wins The Game!");
         game_state.set(GameState::GameOver);
-    } else if player_two.health <= 0 {
+    } else if game_data.player_two.health <= 0 {
         println!("Player One Wins The Game!");
         game_state.set(GameState::GameOver);
     }

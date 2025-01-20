@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod camera;
 mod combo;
@@ -29,6 +29,6 @@ fn main() {
         .add_plugins(StatePlugin)
         .add_plugins(SettingsPlugin)
         .add_plugins(UIPlugin)
-        .add_plugins(WorldInspectorPlugin::new())
+        // .add_plugins(WorldInspectorPlugin::new())
         .run();
 }

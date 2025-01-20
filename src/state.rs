@@ -15,6 +15,7 @@ pub enum GameFlow {
     Title,
     Countdown,
     Reveal,
+    EndTurn,
 }
 
 pub struct StatePlugin;

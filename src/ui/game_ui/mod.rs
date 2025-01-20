@@ -1,8 +1,10 @@
 mod choices;
+mod resolve;
 mod timer;
 mod title;
 
 use choices::ChoicesPlugin;
+use resolve::ResolvePlugin;
 use timer::TimerPlugin;
 use title::TitlePlugin;
 
@@ -15,5 +17,6 @@ impl Plugin for GameUIPlugin {
         app.add_plugins(TimerPlugin);
         app.add_plugins(ChoicesPlugin);
         app.add_plugins(TitlePlugin);
+        app.add_plugins(ResolvePlugin);
     }
 }

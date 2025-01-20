@@ -44,6 +44,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 font_size: 18.0,
                 ..default()
             },
+            TextColor(Color::BLACK),
         ));
 }
 

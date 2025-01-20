@@ -61,6 +61,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             font_size: 50.0,
                             ..default()
                         },
+                        TextColor(Color::BLACK),
                         Label,
                     ));
                 });

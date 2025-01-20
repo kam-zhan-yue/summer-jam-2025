@@ -94,3 +94,17 @@ impl Ord for Location {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum Result {
+    Swirlie,
+    Whirlie,
+    Wedgie,
+}
+
+#[derive(Eq, Hash, PartialEq, Debug)]
+pub enum Outcome {
+    PlayerOne,
+    PlayerTwo,
+    Draw,
+}

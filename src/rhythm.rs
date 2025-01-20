@@ -20,25 +20,11 @@ impl Default for Rhythm {
     }
 }
 
-#[derive(Event, Debug)]
-pub struct BeatEvent(pub i32);
-
-impl BeatEvent {
-    pub fn new(beat: i32) -> Self {
-        BeatEvent(beat)
-    }
-}
-
-#[derive(Event, Debug, Default)]
-pub struct ResolveEvent;
-
 pub struct RhythmPlugin;
 
 impl Plugin for RhythmPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Rhythm>();
-        app.add_event::<BeatEvent>();
-        app.add_event::<ResolveEvent>();
         app.add_systems(OnEnter(GameFlow::Countdown), start_countdown);
         app.add_systems(
             Update,
@@ -56,19 +42,11 @@ fn start_countdown(mut rhythm: ResMut<Rhythm>) {
 fn update_rhythm(
     time: Res<Time>,
     mut rhythm: ResMut<Rhythm>,
-    mut beat_event_writer: EventWriter<BeatEvent>,
-    mut resolve_event_writer: EventWriter<ResolveEvent>,
     mut game_flow: ResMut<NextState<GameFlow>>,
 ) {
     rhythm.timer.tick(time.delta());
     if rhythm.timer.just_finished() {
         rhythm.beat += 1;
-        if rhythm.beat == BEAT_LIMIT + 1 {
-            rhythm.beat = 0;
-            resolve_event_writer.send(ResolveEvent::default());
-        } else {
-            beat_event_writer.send(BeatEvent::new(rhythm.beat));
-        }
         game_flow.set(GameFlow::Reveal);
     }
 }

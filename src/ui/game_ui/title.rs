@@ -42,13 +42,22 @@ fn spawn_title(mut commands: Commands, rhythm: Res<Rhythm>, asset_server: ResMut
             },
         ))
         .with_child((
-            Text::new("Example Title"),
+            Text::new(get_title(rhythm.beat)),
             TextFont {
                 font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                 font_size: 100.0,
                 ..default()
             },
+            TextColor(Color::BLACK),
         ));
+}
+
+fn get_title(beat: i32) -> String {
+    match beat {
+        0 => "TOOLS".to_string(),
+        1 => "LOCATION".to_string(),
+        _ => "NONE".to_string(),
+    }
 }
 
 fn update_title(
