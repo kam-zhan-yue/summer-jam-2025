@@ -5,7 +5,7 @@ use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
 
-use super::ui_assets::UiAssets;
+use crate::globals::UiAssets;
 
 const EFFECTS_TIME: f32 = 2.0;
 

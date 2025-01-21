@@ -4,7 +4,6 @@ mod end_turn;
 mod resolve;
 mod timer;
 mod title;
-mod ui_assets;
 
 use choices::ChoicesPlugin;
 use effects::EffectsPlugin;
@@ -12,7 +11,6 @@ use end_turn::EndTurnPlugin;
 use resolve::ResolvePlugin;
 use timer::TimerPlugin;
 use title::TitlePlugin;
-use ui_assets::UiAssetsPlugin;
 
 use bevy::prelude::*;
 
@@ -26,6 +24,5 @@ impl Plugin for GameUIPlugin {
         app.add_plugins(ResolvePlugin);
         app.add_plugins(EndTurnPlugin);
         app.add_plugins(EffectsPlugin);
-        app.add_plugins(UiAssetsPlugin);
     }
 }

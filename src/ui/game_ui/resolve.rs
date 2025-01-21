@@ -1,12 +1,11 @@
 use crate::combo::GameData;
+use crate::globals::UiAssets;
 use crate::helper::despawn;
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::GameFlow;
 use crate::types::{Outcome, Player};
 use bevy::prelude::*;
-
-use super::ui_assets::UiAssets;
 
 const LOSE_COLOUR: Color = Color::srgb(0.3, 0.3, 0.3);
 const WIN_COLOUR: Color = Color::srgb(0.0, 0.8, 0.2);

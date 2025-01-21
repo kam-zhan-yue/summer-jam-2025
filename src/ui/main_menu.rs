@@ -20,7 +20,11 @@ impl Plugin for MainMenuPlugin {
         app.add_systems(OnEnter(GameState::Start), spawn_main_menu);
         app.add_systems(
             Update,
-            (handle_buttons, handle_single_player_button)
+            (
+                handle_buttons,
+                handle_single_player_button,
+                handle_two_player_button,
+            )
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Start)),
         );
@@ -136,5 +140,20 @@ fn handle_single_player_button(
     if *interaction == Interaction::Pressed {
         game_state.set(GameState::Game);
         game_flow.set(GameFlow::Title);
+    }
+}
+
+fn handle_two_player_button(
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<TwoPlayerButton>)>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut game_flow: ResMut<NextState<GameFlow>>,
+) {
+    let Ok(interaction) = interaction_query.get_single() else {
+        return;
+    };
+
+    if *interaction == Interaction::Pressed {
+        game_state.set(GameState::Game);
+        game_flow.set(GameFlow::RoundStart);
     }
 }

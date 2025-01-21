@@ -2,6 +2,14 @@ use bevy::prelude::*;
 
 use crate::types::{Choice, Element, Tool};
 
+pub struct GlobalPlugin;
+
+impl Plugin for GlobalPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<UiAssets>();
+    }
+}
+
 #[derive(Resource, Debug, Default)]
 pub struct UiAssets {
     pub heart_broken: Handle<Image>,

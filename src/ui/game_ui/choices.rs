@@ -1,12 +1,11 @@
 use crate::combo::{ChoiceEvent, GameData};
+use crate::globals::UiAssets;
 use crate::helper::{hide, show};
 use crate::rhythm::{Rhythm, BEAT_LIMIT};
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
 use crate::types::{Choice, Outcome, Player};
 use bevy::prelude::*;
-
-use super::ui_assets::UiAssets;
 
 const DISABLED_COLOUR: Color = Color::srgb(0.1, 0.1, 0.1);
 const ACTIVE_COLOUR: Color = Color::WHITE;
