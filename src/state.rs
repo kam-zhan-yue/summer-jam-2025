@@ -17,6 +17,13 @@ pub enum GameFlow {
     Reveal,
     EndTurn,
     ApplyEffects,
+
+    RoundStart,
+    SelectElement,
+    SelectAction,
+    ResolveAction,
+    ComboBreaker,
+    RoundOver,
 }
 
 pub struct StatePlugin;

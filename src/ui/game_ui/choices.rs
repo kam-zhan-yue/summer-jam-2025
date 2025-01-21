@@ -1,10 +1,17 @@
-use crate::combo::ChoiceEvent;
+use crate::combo::{ChoiceEvent, GameData};
 use crate::helper::{hide, show};
 use crate::rhythm::{Rhythm, BEAT_LIMIT};
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
-use crate::types::{Choice, Player};
+use crate::types::{Choice, Outcome, Player};
 use bevy::prelude::*;
+
+use super::ui_assets::UiAssets;
+
+const DISABLED_COLOUR: Color = Color::srgb(0.1, 0.1, 0.1);
+const ACTIVE_COLOUR: Color = Color::WHITE;
+const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
+const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
 pub struct ChoicesPlugin;
 
@@ -30,6 +37,7 @@ impl Plugin for ChoicesPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_systems(OnEnter(GameFlow::Countdown), on_enter_countdown);
         app.add_systems(OnEnter(GameFlow::Reveal), hide::<ChoicesPopup>);
         app.add_systems(
             OnExit(GameFlow::Reveal),
@@ -38,7 +46,7 @@ impl Plugin for ChoicesPlugin {
     }
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
     // Root Node
     commands
         .spawn((
@@ -60,6 +68,7 @@ fn setup(mut commands: Commands) {
                 PlayerOneChoices,
                 JustifyContent::Start,
                 FlexDirection::Row,
+                &ui_assets,
             );
             spawn_player_choices(
                 Name::new("Player Two Choices"),
@@ -67,6 +76,7 @@ fn setup(mut commands: Commands) {
                 PlayerTwoChoices,
                 JustifyContent::End,
                 FlexDirection::RowReverse,
+                &ui_assets,
             );
         });
 }
@@ -77,6 +87,7 @@ fn spawn_player_choices(
     player: impl Component,
     justify_content: JustifyContent,
     flex_direction: FlexDirection,
+    ui_assets: &Res<UiAssets>,
 ) {
     parent
         .spawn((
@@ -90,7 +101,7 @@ fn spawn_player_choices(
             },
         ))
         .with_children(|parent| {
-            for i in 0..BEAT_LIMIT {
+            for _ in 0..BEAT_LIMIT {
                 parent
                     .spawn((
                         ChoicePopupItem,
@@ -105,11 +116,34 @@ fn spawn_player_choices(
                         },
                         BorderColor(Color::BLACK),
                         BorderRadius::MAX,
-                        BackgroundColor(Color::WHITE),
+                        BackgroundColor(DISABLED_COLOUR),
                     ))
-                    .with_child((Text::new(i.to_string()), TextColor(Color::BLACK)));
+                    .with_child((
+                        ImageNode::new(ui_assets.empty.clone()),
+                        Node {
+                            width: Val::Px(30.0),
+                            height: Val::Px(30.0),
+                            ..default()
+                        },
+                        Visibility::Hidden,
+                    ));
             }
         });
+}
+
+fn on_enter_countdown(
+    choices: Query<&Children, Or<(With<PlayerOneChoices>, With<PlayerTwoChoices>)>>,
+    mut choice_popup_items: Query<&mut BackgroundColor, With<ChoicePopupItem>>,
+    rhythm: Res<Rhythm>,
+) {
+    // Set the current beat's choices to an active colour
+    for children in choices.iter() {
+        // Get the current child according to the beat
+        let &child = children.get(rhythm.beat as usize).unwrap();
+        // Get the children of that popup item
+        let mut popup_item = choice_popup_items.get_mut(child).unwrap();
+        *popup_item = ACTIVE_COLOUR.into();
+    }
 }
 
 fn read_choices(
@@ -117,7 +151,8 @@ fn read_choices(
     player_one_choices: Query<&Children, With<PlayerOneChoices>>,
     player_two_choices: Query<&Children, With<PlayerTwoChoices>>,
     choice_popup_items: Query<&Children, With<ChoicePopupItem>>,
-    mut text_query: Query<&mut Text>,
+    mut image_query: Query<(&mut ImageNode, &mut Visibility)>,
+    ui_assets: Res<UiAssets>,
 ) {
     let Ok(player_one_children) = player_one_choices.get_single() else {
         return;
@@ -133,9 +168,10 @@ fn read_choices(
         if let Some(&choice_popup_item) = children.get(choice.beat as usize) {
             if let Ok(popup_children) = choice_popup_items.get(choice_popup_item) {
                 if let Some(&child) = popup_children.get(0) {
-                    if let Ok(mut text) = text_query.get_mut(child) {
-                        // Do an animation here instead?
-                        update_choices(choice.choice, choice.beat, &mut text);
+                    if let Ok(mut image) = image_query.get_mut(child) {
+                        // Set to visible and unknown icon
+                        *image.1 = Visibility::Inherited;
+                        image.0.image = ui_assets.unknown.clone();
                     }
                 }
             }
@@ -143,21 +179,47 @@ fn read_choices(
     }
 }
 
-fn update_choices(choice: Choice, beat: i32, text: &mut Text) {
-    **text = choice.to_string();
-}
-
 fn on_show_choices(
     player_one_choices: Query<&Children, With<PlayerOneChoices>>,
     player_two_choices: Query<&Children, With<PlayerTwoChoices>>,
-    choice_popup_items: Query<(&mut BackgroundColor, &Children), With<ChoicePopupItem>>,
-    mut text_query: Query<&mut Text>,
-    rhyhm: Res<Rhythm>,
+    mut choice_popup_items: Query<(&mut BackgroundColor, &Children), With<ChoicePopupItem>>,
+    mut image_query: Query<&mut ImageNode>,
+    rhythm: Res<Rhythm>,
+    game_data: Res<GameData>,
 ) {
-    let Ok(player_one_children) = player_one_choices.get_single() else {
-        return;
-    };
-    let Ok(player_two_children) = player_two_choices.get_single() else {
-        return;
-    };
+    // Here, we want to set the previous result
+    // let Ok(player_one_children) = player_one_choices.get_single() else {
+    //     return;
+    // };
+    // let Ok(player_two_children) = player_two_choices.get_single() else {
+    //     return;
+    // };
+
+    // let prev_beat = rhythm.beat - 1;
+
+    // let result = game_data.get_result(prev_beat);
+    // let player_one_choice = game_data.get_choice(Player::One, prev_beat);
+    // let player_two_choice = game_data.get_choice(Player::Two, prev_beat);
+
+    // let &player_two_pointer = player_one_children.get(prev_beat as usize).unwrap();
+    // let mut player_two_item = choice_popup_items.get_mut(player_two_pointer).unwrap();
+
+    // let &player_one_pointer = player_one_children.get(prev_beat as usize).unwrap();
+    // let mut player_one_item = choice_popup_items.get_mut(player_one_pointer).unwrap();
+    // // Change the background colour according to if they won or lost
+    // match result.outcome {
+    //     Outcome::Draw => {
+    //         // Set both to inactive
+    //         *player_one_item.0 = LOSS_COLOUR.into();
+    //         *player_two_item.0 = LOSS_COLOUR.into();
+    //     }
+    //     Outcome::PlayerOne => {
+    //         *player_one_item.0 = WON_COLOUR.into();
+    //         *player_two_item.0 = LOSS_COLOUR.into();
+    //     }
+    //     Outcome::PlayerTwo => {
+    //         *player_one_item.0 = LOSS_COLOUR.into();
+    //         *player_two_item.0 = WON_COLOUR.into();
+    //     }
+    // }
 }
