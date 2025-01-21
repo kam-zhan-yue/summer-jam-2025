@@ -95,13 +95,6 @@ impl Ord for Element {
     }
 }
 
-#[derive(Debug)]
-pub enum Result {
-    Swirlie,
-    Whirlie,
-    Wedgie,
-}
-
 #[derive(Eq, Hash, PartialEq, Debug)]
 pub enum Outcome {
     PlayerOne,

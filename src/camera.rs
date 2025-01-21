@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+pub const SCREEN_X: f32 = 1400.;
+pub const SCREEN_Y: f32 = 600.;
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {

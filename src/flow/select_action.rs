@@ -15,9 +15,7 @@ use crate::{
     types::{Outcome, Player},
 };
 
-use super::{
-    countdown::Countdown, Flow, COUNTDOWN_TIME, REVEAL_TIME, SELECT_ACTION_TIME, TITLE_TIME,
-};
+use super::{countdown::Countdown, COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME};
 
 #[derive(Component, Debug)]
 struct SelectActionPopup;
@@ -80,7 +78,7 @@ impl Plugin for SelectActionPlugin {
         );
         app.add_systems(
             OnExit(GameFlow::SelectAction),
-            despawn::<SelectActionPopup>.in_set(GameSet::Ui),
+            (despawn::<SelectActionPopup>, despawn::<RevealActionPopup>).in_set(GameSet::Ui),
         );
     }
 }

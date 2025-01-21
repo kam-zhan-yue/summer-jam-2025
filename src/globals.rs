@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::types::{Choice, Element, Action};
+use crate::{
+    combo::ResolveResult,
+    types::{Action, Choice, Element, Outcome},
+};
 
 pub struct GlobalPlugin;
 
@@ -22,6 +25,13 @@ pub struct UiAssets {
     pub tool_hand: Handle<Image>,
     pub tool_toilet: Handle<Image>,
     pub tool_underwear: Handle<Image>,
+    pub result_swirly_p1: Handle<Image>,
+    pub result_swirly_p2: Handle<Image>,
+    pub result_whirly_p1: Handle<Image>,
+    pub result_whirly_p2: Handle<Image>,
+    pub result_wedgie_p1: Handle<Image>,
+    pub result_wedgie_p2: Handle<Image>,
+    pub result_draw: Handle<Image>,
     pub fira_sans_bold: Handle<Font>,
 }
 
@@ -35,6 +45,22 @@ impl UiAssets {
             Choice::Element(Element::Fire) => self.element_fire.clone(),
             Choice::Element(Element::Water) => self.element_water.clone(),
             Choice::Element(Element::Grass) => self.element_grass.clone(),
+        }
+    }
+
+    pub fn get_result(&self, result: ResolveResult) -> Handle<Image> {
+        match (result.outcome, result.choice) {
+            (Outcome::PlayerOne, Choice::Action(Action::Hand)) => self.result_whirly_p1.clone(),
+            (Outcome::PlayerOne, Choice::Action(Action::Toilet)) => self.result_swirly_p1.clone(),
+            (Outcome::PlayerOne, Choice::Action(Action::Underwear)) => {
+                self.result_wedgie_p1.clone()
+            }
+            (Outcome::PlayerTwo, Choice::Action(Action::Hand)) => self.result_whirly_p2.clone(),
+            (Outcome::PlayerTwo, Choice::Action(Action::Toilet)) => self.result_swirly_p2.clone(),
+            (Outcome::PlayerTwo, Choice::Action(Action::Underwear)) => {
+                self.result_wedgie_p2.clone()
+            }
+            _ => self.result_draw.clone(),
         }
     }
 }
@@ -61,4 +87,11 @@ fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
     ui_assets.tool_hand = asset_server.load("ui/tool_hand.png");
     ui_assets.tool_underwear = asset_server.load("ui/tool_underwear.png");
     ui_assets.fira_sans_bold = asset_server.load("fonts/FiraSans-Bold.ttf");
+    ui_assets.result_swirly_p1 = asset_server.load("ui/result_swirly_p1.png");
+    ui_assets.result_swirly_p2 = asset_server.load("ui/result_swirly_p2.png");
+    ui_assets.result_wedgie_p1 = asset_server.load("ui/result_wedgie_p1.png");
+    ui_assets.result_wedgie_p2 = asset_server.load("ui/result_wedgie_p2.png");
+    ui_assets.result_whirly_p1 = asset_server.load("ui/result_whirly_p1.png");
+    ui_assets.result_whirly_p2 = asset_server.load("ui/result_whirly_p1.png");
+    ui_assets.result_draw = asset_server.load("ui/result_draw.png");
 }
