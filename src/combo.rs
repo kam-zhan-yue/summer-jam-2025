@@ -2,7 +2,7 @@ use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
 use crate::state::{GameFlow, GameState};
-use crate::types::{Choice, Location, Outcome, Player, Tool};
+use crate::types::{Choice, Element, Outcome, Player, Tool};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -188,21 +188,21 @@ fn setup_game(
         KeyCode::KeyA,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            location: Choice::Location(Location::Classroom),
+            location: Choice::Location(Element::Water),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyS,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            location: Choice::Location(Location::Gymnasium),
+            location: Choice::Location(Element::Grass),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyD,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Lighter),
-            location: Choice::Location(Location::Library),
+            location: Choice::Location(Element::Fire),
         },
     );
 
@@ -211,21 +211,21 @@ fn setup_game(
         KeyCode::KeyJ,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            location: Choice::Location(Location::Classroom),
+            location: Choice::Location(Element::Water),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyK,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            location: Choice::Location(Location::Gymnasium),
+            location: Choice::Location(Element::Grass),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyL,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Lighter),
-            location: Choice::Location(Location::Library),
+            location: Choice::Location(Element::Fire),
         },
     );
 

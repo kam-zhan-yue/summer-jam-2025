@@ -12,7 +12,7 @@ pub enum Choice {
     #[default]
     None,
     Tool(Tool),
-    Location(Location),
+    Location(Element),
 }
 
 impl fmt::Display for Choice {
@@ -61,36 +61,36 @@ impl Ord for Tool {
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
-pub enum Location {
+pub enum Element {
     #[default]
-    Library,
-    Classroom,
-    Gymnasium,
+    Fire,
+    Water,
+    Grass,
 }
 
-impl fmt::Display for Location {
+impl fmt::Display for Element {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Location::Library => write!(f, "Library"),
-            Location::Classroom => write!(f, "Classroom"),
-            Location::Gymnasium => write!(f, "Gymnasium"),
+            Element::Fire => write!(f, "Fire"),
+            Element::Water => write!(f, "Water"),
+            Element::Grass => write!(f, "Grass"),
         }
     }
 }
 
-impl Ord for Location {
+impl Ord for Element {
     fn cmp(&self, other: &Self) -> Ordering {
-        use Location::*;
+        use Element::*;
         match (self, other) {
-            (Library, Library) => Ordering::Equal,
-            (Classroom, Classroom) => Ordering::Equal,
-            (Gymnasium, Gymnasium) => Ordering::Equal,
-            (Library, Classroom) => Ordering::Less,
-            (Library, Gymnasium) => Ordering::Greater,
-            (Classroom, Library) => Ordering::Greater,
-            (Classroom, Gymnasium) => Ordering::Less,
-            (Gymnasium, Library) => Ordering::Less,
-            (Gymnasium, Classroom) => Ordering::Greater,
+            (Fire, Fire) => Ordering::Equal,
+            (Water, Water) => Ordering::Equal,
+            (Grass, Grass) => Ordering::Equal,
+            (Fire, Water) => Ordering::Less,
+            (Fire, Grass) => Ordering::Greater,
+            (Water, Fire) => Ordering::Greater,
+            (Water, Grass) => Ordering::Less,
+            (Grass, Fire) => Ordering::Less,
+            (Grass, Water) => Ordering::Greater,
         }
     }
 }
