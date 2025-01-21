@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    combo::GameData,
+    combo::{GameData, PlayerData},
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
     state::{GameFlow, UiFlow},
+    types::{Choice, Element, Player},
 };
 
 use super::{
@@ -17,6 +18,14 @@ struct SelectElementPopup;
 
 #[derive(Component, Debug)]
 struct SelectElementTitle;
+
+#[derive(Component, Debug)]
+struct RevealElementPopup;
+#[derive(Component, Debug)]
+struct PlayerOneElement;
+
+#[derive(Component, Debug)]
+struct PlayerTwoElement;
 
 pub struct SelectElementPlugin;
 
@@ -39,9 +48,18 @@ impl Plugin for SelectElementPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameFlow::SelectElement)),
         );
+
+        app.add_systems(
+            OnEnter(UiFlow::Reveal),
+            reveal
+                .in_set(GameSet::Ui)
+                .run_if(in_state(GameFlow::SelectElement)),
+        );
+
+        // Depsawn after exiting SelectElement
         app.add_systems(
             OnExit(GameFlow::SelectElement),
-            despawn::<SelectElementPopup>.in_set(GameSet::Ui),
+            (despawn::<RevealElementPopup>, despawn::<SelectElementPopup>).in_set(GameSet::Ui),
         );
     }
 }
@@ -49,9 +67,11 @@ impl Plugin for SelectElementPlugin {
 fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
+    asset_server: Res<AssetServer>,
     mut countdown: ResMut<Countdown>,
     mut next_ui: ResMut<NextState<UiFlow>>,
 ) {
+    println!("{:?}", ui_assets.get_icon(Choice::Element(Element::Grass)));
     countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
     next_ui.set(UiFlow::Title);
     commands
@@ -81,7 +101,7 @@ fn handle_countdown(
     mut countdown: ResMut<Countdown>,
     current_ui_flow: Res<State<UiFlow>>,
     mut next_ui_flow: ResMut<NextState<UiFlow>>,
-    mut flow: ResMut<Flow>,
+    mut next_game_flow: ResMut<NextState<GameFlow>>,
     time: Res<Time>,
 ) {
     countdown.tick(time.delta());
@@ -98,13 +118,109 @@ fn handle_countdown(
                 next_ui_flow.set(UiFlow::Reveal);
             }
             // Go to the next stage after the reveal
-            UiFlow::Reveal => flow.reset(Timer::from_seconds(SELECT_ELEMENT_TIME, TimerMode::Once)),
+            UiFlow::Reveal => next_game_flow.set(GameFlow::SelectAction),
         }
     }
 }
 
-fn handle_input(current_ui_flow: Res<State<UiFlow>>, mut game_data: ResMut<GameData>) {
+fn handle_input(
+    current_ui_flow: Res<State<UiFlow>>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut game_data: ResMut<GameData>,
+) {
     if *current_ui_flow.get() != UiFlow::Countdown {
         return;
     }
+    process_input(&mut game_data.player_one, &input);
+    process_input(&mut game_data.player_two, &input);
+}
+
+fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>) {
+    // Get the selected choice
+    let mut selected_choice = None;
+    for (key, choice) in &player_data.input.map {
+        if input.pressed(*key) {
+            selected_choice = Some(choice);
+            break;
+        }
+    }
+
+    if let Some(choice) = selected_choice {
+        if player_data.choice_selection.element != choice.element {
+            player_data.choice_selection.element = choice.element;
+        }
+    }
+}
+
+fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAssets>) {
+    println!(
+        "Player One Selected {}",
+        game_data.player_one.choice_selection.element
+    );
+    println!(
+        "Player Two Selected {}",
+        game_data.player_two.choice_selection.element
+    );
+
+    commands
+        .spawn((
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                row_gap: Val::Px(50.0),
+                flex_direction: FlexDirection::Row,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            RevealElementPopup,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    PlayerOneElement,
+                    Node {
+                        width: Val::Px(200.0),
+                        height: Val::Px(200.0),
+                        border: UiRect::all(Val::Px(10.0)),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    BorderColor(Color::BLACK),
+                    BorderRadius::MAX,
+                    BackgroundColor(Color::WHITE),
+                ))
+                .with_child((
+                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::One))),
+                    Node {
+                        width: Val::Px(75.0),
+                        height: Val::Px(75.0),
+                        ..default()
+                    },
+                ));
+            parent
+                .spawn((
+                    PlayerTwoElement,
+                    Node {
+                        width: Val::Px(200.0),
+                        height: Val::Px(200.0),
+                        border: UiRect::all(Val::Px(10.0)),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    BorderColor(Color::BLACK),
+                    BorderRadius::MAX,
+                    BackgroundColor(Color::WHITE),
+                ))
+                .with_child((
+                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::One))),
+                    Node {
+                        width: Val::Px(75.0),
+                        height: Val::Px(75.0),
+                        ..default()
+                    },
+                ));
+        });
 }

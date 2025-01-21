@@ -19,10 +19,10 @@ pub struct GameUIPlugin;
 impl Plugin for GameUIPlugin {
     fn build(&self, app: &mut App) {
         // app.add_plugins(TimerPlugin);
-        app.add_plugins(ChoicesPlugin);
+        // app.add_plugins(ChoicesPlugin);
         app.add_plugins(TitlePlugin);
-        app.add_plugins(ResolvePlugin);
-        app.add_plugins(EndTurnPlugin);
-        app.add_plugins(EffectsPlugin);
+        // app.add_plugins(ResolvePlugin);
+        // app.add_plugins(EndTurnPlugin);
+        // app.add_plugins(EffectsPlugin);
     }
 }

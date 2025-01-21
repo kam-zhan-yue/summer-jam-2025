@@ -25,7 +25,7 @@ impl ChoiceSelection {
     }
 }
 
-#[derive(Component, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct PlayerInput {
     pub map: HashMap<KeyCode, ChoiceSelection>,
 }
@@ -40,6 +40,7 @@ impl PlayerInput {
 pub struct PlayerData {
     pub choice_selection: ChoiceSelection,
     pub health: i32,
+    pub input: PlayerInput,
 }
 
 impl PlayerData {
@@ -52,6 +53,7 @@ impl Default for PlayerData {
     fn default() -> Self {
         Self {
             choice_selection: ChoiceSelection::default(),
+            input: PlayerInput::default(),
             health: MAX_HEALTH,
         }
     }
@@ -68,6 +70,13 @@ impl GameData {
         match player {
             Player::One => self.player_one.get_choice(beat),
             Player::Two => self.player_two.get_choice(beat),
+        }
+    }
+
+    pub fn get_element(&self, player: Player) -> Choice {
+        match player {
+            Player::One => self.player_one.choice_selection.element,
+            Player::Two => self.player_two.choice_selection.element,
         }
     }
 
@@ -144,11 +153,9 @@ impl GameData {
 }
 
 #[derive(Component, Debug)]
-#[require(PlayerInput)]
 pub struct PlayerOne;
 
 #[derive(Component, Debug)]
-#[require(PlayerInput)]
 pub struct PlayerTwo;
 
 #[derive(Event, Debug)]
@@ -187,12 +194,6 @@ impl Plugin for ComboPlugin {
         app.init_resource::<GameData>();
         app.add_systems(OnEnter(GameState::Game), setup_game);
         app.add_systems(
-            Update,
-            handle_input
-                .in_set(GameSet::Resolve)
-                .run_if(in_state(GameFlow::Countdown)),
-        );
-        app.add_systems(
             OnEnter(GameFlow::EndTurn),
             enter_resolve.in_set(GameSet::Resolve),
         );
@@ -204,6 +205,7 @@ fn setup_game(
     mut commands: Commands,
     settings: Res<GameSettings>,
     asset_server: ResMut<AssetServer>,
+    mut game_data: ResMut<GameData>,
 ) {
     let mut player_one_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
     player_one_inputs.insert(
@@ -251,79 +253,20 @@ fn setup_game(
         },
     );
 
+    game_data.player_one.input = PlayerInput::new(player_one_inputs);
+    game_data.player_two.input = PlayerInput::new(player_two_inputs);
+
     commands.spawn((
         Transform::from_xyz(-300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerOne,
-        PlayerInput::new(player_one_inputs),
         Sprite::from_image(asset_server.load("sprites/stick_left.png")),
     ));
 
     commands.spawn((
         Transform::from_xyz(300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerTwo,
-        PlayerInput::new(player_two_inputs),
         Sprite::from_image(asset_server.load("sprites/stick_right.png")),
     ));
-}
-
-fn handle_input(
-    mut player_one_query: Query<&mut PlayerInput, With<PlayerOne>>,
-    mut player_two_query: Query<&mut PlayerInput, (With<PlayerTwo>, Without<PlayerOne>)>,
-    input: Res<ButtonInput<KeyCode>>,
-    rhythm: Res<Rhythm>,
-    mut game_data: ResMut<GameData>,
-    mut choice_event_writer: EventWriter<ChoiceEvent>,
-) {
-    let Ok(player_one_input) = player_one_query.get_single_mut() else {
-        return;
-    };
-    let Ok(player_two_input) = player_two_query.get_single_mut() else {
-        return;
-    };
-    process_input(
-        &player_one_input,
-        &mut game_data.player_one,
-        Player::One,
-        &input,
-        rhythm.beat,
-        &mut choice_event_writer,
-    );
-    process_input(
-        &player_two_input,
-        &mut game_data.player_two,
-        Player::Two,
-        &input,
-        rhythm.beat,
-        &mut choice_event_writer,
-    );
-}
-
-fn process_input(
-    player_input: &PlayerInput,
-    player_data: &mut PlayerData,
-    player: Player,
-    input: &Res<ButtonInput<KeyCode>>,
-    beat: i32,
-    choice_event_writer: &mut EventWriter<ChoiceEvent>,
-) {
-    let mut selected_choice = None;
-    // Get the selected data
-    for (key, choice) in &player_input.map {
-        if input.pressed(*key) {
-            selected_choice = Some(choice);
-            break;
-        }
-    }
-
-    if let Some(choice) = selected_choice {
-        if player_data.choice_selection.element != choice.element && beat == 0 {
-            player_data.choice_selection.element = choice.element;
-            choice_event_writer.send(ChoiceEvent::new(choice.element, player, beat));
-        } else if player_data.choice_selection.tool != choice.tool && beat == 1 {
-            player_data.choice_selection.tool = choice.tool;
-            choice_event_writer.send(ChoiceEvent::new(choice.tool, player, beat));
-        }
-    }
 }
 
 fn enter_resolve(mut game_state: ResMut<NextState<GameState>>, mut game_data: ResMut<GameData>) {

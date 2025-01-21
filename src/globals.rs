@@ -6,7 +6,7 @@ pub struct GlobalPlugin;
 
 impl Plugin for GlobalPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<UiAssets>();
+        app.add_plugins(UiAssetsPlugin);
     }
 }
 
