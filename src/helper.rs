@@ -11,6 +11,18 @@ pub fn despawn<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: C
     }
 }
 
+pub fn show<T: Component>(mut query: Query<&mut Visibility, With<T>>) {
+    for mut visibility in query.iter_mut() {
+        *visibility = Visibility::Visible;
+    }
+}
+
+pub fn hide<T: Component>(mut query: Query<&mut Visibility, With<T>>) {
+    for mut visibility in query.iter_mut() {
+        *visibility = Visibility::Hidden;
+    }
+}
+
 pub fn handle_buttons(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &mut BorderColor),

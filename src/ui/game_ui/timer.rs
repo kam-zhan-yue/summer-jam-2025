@@ -1,6 +1,7 @@
+use crate::helper::{hide, show};
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
-use crate::state::GameState;
+use crate::state::{GameFlow, GameState};
 use bevy::prelude::*;
 
 pub struct TimerPlugin;
@@ -20,6 +21,8 @@ impl Plugin for TimerPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_systems(OnEnter(GameFlow::Reveal), hide::<Timer>);
+        app.add_systems(OnExit(GameFlow::Reveal), show::<Timer>);
     }
 }
 

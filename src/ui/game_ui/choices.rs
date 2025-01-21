@@ -1,13 +1,15 @@
 use crate::combo::ChoiceEvent;
+use crate::helper::{hide, show};
 use crate::rhythm::BEAT_LIMIT;
 use crate::schedule::GameSet;
-use crate::state::GameState;
+use crate::state::{GameFlow, GameState};
 use crate::types::{Choice, Player};
 use bevy::prelude::*;
 
 pub struct ChoicesPlugin;
 
 #[derive(Component, Debug, Default)]
+#[require(Visibility)]
 struct ChoicesPopup;
 
 #[derive(Component, Debug, Default)]
@@ -28,6 +30,8 @@ impl Plugin for ChoicesPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Game)),
         );
+        app.add_systems(OnEnter(GameFlow::Reveal), hide::<ChoicesPopup>);
+        app.add_systems(OnExit(GameFlow::Reveal), show::<ChoicesPopup>);
     }
 }
 

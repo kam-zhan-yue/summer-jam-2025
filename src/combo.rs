@@ -12,14 +12,14 @@ const MAX_HEALTH: i32 = 1;
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
     pub tool: Choice,
-    pub location: Choice,
+    pub element: Choice,
 }
 
 impl ChoiceSelection {
     pub fn get_choice(self, beat: i32) -> Choice {
         match beat {
             1 => self.tool,
-            2 => self.location,
+            2 => self.element,
             _ => Choice::None,
         }
     }
@@ -80,11 +80,11 @@ impl GameData {
 
     pub fn get_result(&self, beat: i32) -> ResolveResult {
         let result = if beat == 1 {
-            println!("=========TOOL=========");
-            self.resolve(|player| player.choice_selection.tool)
+            println!("=========Element=========");
+            self.resolve(|player| player.choice_selection.element)
         } else if beat == 2 {
-            println!("=========LOCATION=========");
-            self.resolve(|player| player.choice_selection.location)
+            println!("=========Tool=========");
+            self.resolve(|player| player.choice_selection.tool)
         } else {
             ResolveResult {
                 outcome: Outcome::Draw,
@@ -188,21 +188,21 @@ fn setup_game(
         KeyCode::KeyA,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            location: Choice::Location(Element::Water),
+            element: Choice::Location(Element::Water),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyS,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            location: Choice::Location(Element::Grass),
+            element: Choice::Location(Element::Grass),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyD,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Lighter),
-            location: Choice::Location(Element::Fire),
+            element: Choice::Location(Element::Fire),
         },
     );
 
@@ -211,21 +211,21 @@ fn setup_game(
         KeyCode::KeyJ,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            location: Choice::Location(Element::Water),
+            element: Choice::Location(Element::Water),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyK,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            location: Choice::Location(Element::Grass),
+            element: Choice::Location(Element::Grass),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyL,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Lighter),
-            location: Choice::Location(Element::Fire),
+            element: Choice::Location(Element::Fire),
         },
     );
 
@@ -294,12 +294,12 @@ fn process_input(
     }
 
     if let Some(choice) = selected_choice {
-        if player_data.choice_selection.tool != choice.tool && beat == 0 {
+        if player_data.choice_selection.element != choice.element && beat == 0 {
+            player_data.choice_selection.element = choice.element;
+            choice_event_writer.send(ChoiceEvent::new(choice.element, player, beat));
+        } else if player_data.choice_selection.tool != choice.tool && beat == 1 {
             player_data.choice_selection.tool = choice.tool;
             choice_event_writer.send(ChoiceEvent::new(choice.tool, player, beat));
-        } else if player_data.choice_selection.location != choice.location && beat == 1 {
-            player_data.choice_selection.location = choice.location;
-            choice_event_writer.send(ChoiceEvent::new(choice.location, player, beat));
         }
     }
 }
