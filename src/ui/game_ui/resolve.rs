@@ -1,5 +1,3 @@
-use std::f64::consts::LOG2_E;
-
 use crate::combo::GameData;
 use crate::helper::despawn;
 use crate::rhythm::Rhythm;
@@ -36,12 +34,12 @@ impl Plugin for ResolvePlugin {
         app.add_systems(OnEnter(GameFlow::Reveal), setup.in_set(GameSet::Ui));
         app.add_systems(
             Update,
-            (handle_resolve, handle_timers)
+            handle_resolve
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameFlow::Reveal)),
         );
         app.add_systems(
-            OnExit(GameFlow::Title),
+            OnExit(GameFlow::Reveal),
             (despawn::<Resolve>, despawn::<Reveal>),
         );
     }
@@ -177,30 +175,7 @@ fn handle_resolve(
                     *player_two.0 = WIN_COLOUR.into();
                 }
             }
-            commands.spawn(Reveal {
-                timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
-            });
-        }
-    }
-    if let Ok(mut reveal) = reveal_query.get_single_mut() {
-        reveal.timer.tick(time.delta());
-        // Transition to the next turn
-        if reveal.timer.just_finished() {
-            game_flow.set(GameFlow::Title);
-        }
-    }
-}
 
-fn handle_timers(
-    mut commands: Commands,
-    mut resolve_query: Query<&mut Resolve>,
-    mut reveal_query: Query<&mut Reveal>,
-    time: Res<Time>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
-) {
-    if let Ok(mut resolve) = resolve_query.get_single_mut() {
-        resolve.timer.tick(time.delta());
-        if resolve.timer.just_finished() {
             commands.spawn(Reveal {
                 timer: Timer::from_seconds(REVEAL_TIME, TimerMode::Once),
             });
@@ -210,7 +185,11 @@ fn handle_timers(
         reveal.timer.tick(time.delta());
         // Transition to the next turn
         if reveal.timer.just_finished() {
-            game_flow.set(GameFlow::Title);
+            if rhythm.can_end_turn() {
+                game_flow.set(GameFlow::EndTurn);
+            } else {
+                game_flow.set(GameFlow::Title);
+            }
         }
     }
 }

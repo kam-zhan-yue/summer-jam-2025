@@ -1,9 +1,11 @@
 mod choices;
+mod end_turn;
 mod resolve;
 mod timer;
 mod title;
 
 use choices::ChoicesPlugin;
+use end_turn::EndTurnPlugin;
 use resolve::ResolvePlugin;
 use timer::TimerPlugin;
 use title::TitlePlugin;
@@ -18,5 +20,6 @@ impl Plugin for GameUIPlugin {
         app.add_plugins(ChoicesPlugin);
         app.add_plugins(TitlePlugin);
         app.add_plugins(ResolvePlugin);
+        app.add_plugins(EndTurnPlugin);
     }
 }

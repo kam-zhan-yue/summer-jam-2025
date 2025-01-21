@@ -11,6 +11,15 @@ pub struct Rhythm {
     pub beat: i32,
 }
 
+impl Rhythm {
+    pub fn can_end_turn(&self) -> bool {
+        self.beat >= BEAT_LIMIT
+    }
+    pub fn reset(&mut self) {
+        self.beat = 0;
+    }
+}
+
 impl Default for Rhythm {
     fn default() -> Self {
         Self {
