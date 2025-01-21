@@ -75,11 +75,6 @@ fn handle_timers(
 
     end_turn_popup.timer.tick(time.delta());
     if end_turn_popup.timer.just_finished() {
-        rhythm.reset();
-        if game_data.can_end_game() {
-            game_state.set(GameState::GameOver);
-        } else {
-            game_flow.set(GameFlow::Title);
-        }
+        game_flow.set(GameFlow::ApplyEffects);
     }
 }

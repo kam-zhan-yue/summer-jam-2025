@@ -16,6 +16,7 @@ pub enum GameFlow {
     Countdown,
     Reveal,
     EndTurn,
+    ApplyEffects,
 }
 
 pub struct StatePlugin;

@@ -44,6 +44,7 @@ fn setup(mut commands: Commands) {
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
+                top: Val::Px(75.0),
                 justify_content: JustifyContent::Center,
                 align_content: AlignContent::Center,
                 ..default()

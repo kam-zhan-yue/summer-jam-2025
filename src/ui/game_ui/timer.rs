@@ -21,8 +21,8 @@ impl Plugin for TimerPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::Game)),
         );
-        app.add_systems(OnEnter(GameFlow::Reveal), hide::<Timer>);
-        app.add_systems(OnExit(GameFlow::Reveal), show::<Timer>);
+        app.add_systems(OnEnter(GameFlow::Countdown), show::<Timer>);
+        app.add_systems(OnExit(GameFlow::Countdown), hide::<Timer>);
     }
 }
 
@@ -44,7 +44,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             Text::new("3.0"),
             TextFont {
                 font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                font_size: 18.0,
+                font_size: 30.0,
                 ..default()
             },
             TextColor(Color::BLACK),

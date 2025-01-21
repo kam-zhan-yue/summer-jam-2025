@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use std::collections::HashMap;
 
 const PLAYER_LENGTH: f32 = 1.4;
-const MAX_HEALTH: i32 = 1;
+pub const MAX_HEALTH: i32 = 3;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
@@ -36,10 +36,19 @@ impl PlayerInput {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct PlayerData {
     pub choice_selection: ChoiceSelection,
     pub health: i32,
+}
+
+impl Default for PlayerData {
+    fn default() -> Self {
+        Self {
+            choice_selection: ChoiceSelection::default(),
+            health: MAX_HEALTH,
+        }
+    }
 }
 
 #[derive(Resource, Debug, Default)]
