@@ -1,5 +1,6 @@
+use crate::flow::Flow;
+use crate::globals::UiAssets;
 use crate::helper::{hide, show};
-use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
 use bevy::prelude::*;
@@ -26,7 +27,7 @@ impl Plugin for TimerPlugin {
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
     // Root Node
     commands
         .spawn((
@@ -43,7 +44,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             Timer,
             Text::new("3.0"),
             TextFont {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font: ui_assets.fira_sans_bold.clone(),
                 font_size: 30.0,
                 ..default()
             },
@@ -51,9 +52,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ));
 }
 
-fn update_timer(mut query: Query<&mut Text, With<Timer>>, rhythm: Res<Rhythm>) {
+fn update_timer(mut query: Query<&mut Text, With<Timer>>, flow: Res<Flow>) {
     let Ok(mut timer) = query.get_single_mut() else {
         return;
     };
-    **timer = format!("{:.1}", rhythm.timer.remaining_secs());
+    **timer = format!("{:.1}", flow.timer.remaining_secs());
 }

@@ -1,7 +1,17 @@
+use bevy::prelude::*;
 use std::time::Duration;
 
-use bevy::prelude::*;
+mod combo_breaker;
+mod countdown;
+mod resolve_action;
+mod round_over;
+mod round_start;
+mod select_action;
+mod select_element;
+mod title;
+
 use combo_breaker::ComboBreakerPlugin;
+use countdown::CountdownPlugin;
 use resolve_action::ResolveActionPlugin;
 use round_over::RoundOverPlugin;
 use round_start::RoundStartPlugin;
@@ -10,13 +20,9 @@ use select_element::SelectElementPlugin;
 
 use crate::{schedule::GameSet, state::GameFlow};
 
-mod combo_breaker;
-mod resolve_action;
-mod round_over;
-mod round_start;
-mod select_action;
-mod select_element;
-
+const TITLE_TIME: f32 = 2.0;
+const COUNTDOWN_TIME: f32 = 5.0;
+const REVEAL_TIME: f32 = 3.0;
 const ROUND_START_TIME: f32 = 1.0;
 const SELECT_ELEMENT_TIME: f32 = 3.0;
 const SELECT_ACTION_TIME: f32 = 3.0;
@@ -55,6 +61,7 @@ impl Plugin for FlowPlugin {
         app.add_plugins(ResolveActionPlugin);
         app.add_plugins(ComboBreakerPlugin);
         app.add_plugins(RoundOverPlugin);
+        app.add_plugins(CountdownPlugin);
         app.add_systems(Update, handle_flow.in_set(GameSet::Flow));
     }
 }
