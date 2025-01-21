@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::types::{Choice, Element, Tool};
+use crate::types::{Choice, Element, Action};
 
 pub struct GlobalPlugin;
 
@@ -29,9 +29,9 @@ impl UiAssets {
     pub fn get_icon(&self, choice: Choice) -> Handle<Image> {
         match choice {
             Choice::None => self.unknown.clone(),
-            Choice::Tool(Tool::Hand) => self.tool_hand.clone(),
-            Choice::Tool(Tool::Toilet) => self.tool_toilet.clone(),
-            Choice::Tool(Tool::Underwear) => self.tool_underwear.clone(),
+            Choice::Action(Action::Hand) => self.tool_hand.clone(),
+            Choice::Action(Action::Toilet) => self.tool_toilet.clone(),
+            Choice::Action(Action::Underwear) => self.tool_underwear.clone(),
             Choice::Element(Element::Fire) => self.element_fire.clone(),
             Choice::Element(Element::Water) => self.element_water.clone(),
             Choice::Element(Element::Grass) => self.element_grass.clone(),

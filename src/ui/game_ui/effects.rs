@@ -30,7 +30,7 @@ pub struct EffectsPlugin;
 
 impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Game), setup);
+        app.add_systems(OnEnter(GameFlow::RoundStart), setup);
         app.add_systems(OnEnter(GameFlow::ApplyEffects), on_enter_apply_effects);
         app.add_systems(
             Update,

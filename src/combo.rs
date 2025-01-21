@@ -1,8 +1,7 @@
-use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
 use crate::state::{GameFlow, GameState};
-use crate::types::{Choice, Element, Outcome, Player, Tool};
+use crate::types::{Action, Choice, Element, Outcome, Player};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -11,15 +10,15 @@ pub const MAX_HEALTH: i32 = 3;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
-    pub tool: Choice,
     pub element: Choice,
+    pub action: Choice,
 }
 
 impl ChoiceSelection {
     pub fn get_choice(self, beat: i32) -> Choice {
         match beat {
             1 => self.element,
-            2 => self.tool,
+            2 => self.action,
             _ => Choice::None,
         }
     }
@@ -80,6 +79,13 @@ impl GameData {
         }
     }
 
+    pub fn get_action(&self, player: Player) -> Choice {
+        match player {
+            Player::One => self.player_one.choice_selection.action,
+            Player::Two => self.player_two.choice_selection.action,
+        }
+    }
+
     pub fn reset(&mut self) {
         self.player_one.choice_selection = ChoiceSelection::default();
         self.player_two.choice_selection = ChoiceSelection::default();
@@ -89,8 +95,8 @@ impl GameData {
         println!("=========RESOLVE=========");
         let mut map: HashMap<Outcome, i32> = HashMap::new();
 
-        let tool = self.resolve(|player| player.choice_selection.tool);
-        let location = self.resolve(|player| player.choice_selection.tool);
+        let tool = self.resolve(|player| player.choice_selection.action);
+        let location = self.resolve(|player| player.choice_selection.action);
 
         *map.entry(tool.outcome).or_insert(0) += 1;
         *map.entry(location.outcome).or_insert(0) += 1;
@@ -115,7 +121,7 @@ impl GameData {
             self.resolve(|player| player.choice_selection.element)
         } else if beat == 2 {
             println!("=========Tool=========");
-            self.resolve(|player| player.choice_selection.tool)
+            self.resolve(|player| player.choice_selection.action)
         } else {
             ResolveResult {
                 outcome: Outcome::Draw,
@@ -211,21 +217,21 @@ fn setup_game(
     player_one_inputs.insert(
         KeyCode::KeyA,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Toilet),
+            action: Choice::Action(Action::Toilet),
             element: Choice::Element(Element::Water),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyS,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Underwear),
+            action: Choice::Action(Action::Underwear),
             element: Choice::Element(Element::Grass),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyD,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Hand),
+            action: Choice::Action(Action::Hand),
             element: Choice::Element(Element::Fire),
         },
     );
@@ -234,21 +240,21 @@ fn setup_game(
     player_two_inputs.insert(
         KeyCode::KeyJ,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Toilet),
+            action: Choice::Action(Action::Toilet),
             element: Choice::Element(Element::Water),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyK,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Underwear),
+            action: Choice::Action(Action::Underwear),
             element: Choice::Element(Element::Grass),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyL,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Hand),
+            action: Choice::Action(Action::Hand),
             element: Choice::Element(Element::Fire),
         },
     );

@@ -11,7 +11,7 @@ pub enum Player {
 pub enum Choice {
     #[default]
     None,
-    Tool(Tool),
+    Action(Action),
     Element(Element),
 }
 
@@ -19,33 +19,33 @@ impl fmt::Display for Choice {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Choice::None => write!(f, "None"),
-            Choice::Tool(tool) => write!(f, "{}", tool),
+            Choice::Action(tool) => write!(f, "{}", tool),
             Choice::Element(location) => write!(f, "{}", location),
         }
     }
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
-pub enum Tool {
+pub enum Action {
     #[default]
     Toilet,
     Underwear,
     Hand,
 }
 
-impl fmt::Display for Tool {
+impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Tool::Toilet => write!(f, "Toilet"),
-            Tool::Underwear => write!(f, "Underwear"),
-            Tool::Hand => write!(f, "Hand"),
+            Action::Toilet => write!(f, "Toilet"),
+            Action::Underwear => write!(f, "Underwear"),
+            Action::Hand => write!(f, "Hand"),
         }
     }
 }
 
-impl Ord for Tool {
+impl Ord for Action {
     fn cmp(&self, other: &Self) -> Ordering {
-        use Tool::*;
+        use Action::*;
         match (self, other) {
             (Toilet, Toilet) => Ordering::Equal,
             (Underwear, Underwear) => Ordering::Equal,

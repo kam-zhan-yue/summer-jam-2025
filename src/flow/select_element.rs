@@ -9,9 +9,7 @@ use crate::{
     types::{Choice, Element, Player},
 };
 
-use super::{
-    countdown::Countdown, Flow, COUNTDOWN_TIME, REVEAL_TIME, SELECT_ELEMENT_TIME, TITLE_TIME,
-};
+use super::{countdown::Countdown, COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME};
 
 #[derive(Component, Debug)]
 struct SelectElementPopup;
@@ -67,11 +65,9 @@ impl Plugin for SelectElementPlugin {
 fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
-    asset_server: Res<AssetServer>,
     mut countdown: ResMut<Countdown>,
     mut next_ui: ResMut<NextState<UiFlow>>,
 ) {
-    println!("{:?}", ui_assets.get_icon(Choice::Element(Element::Grass)));
     countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
     next_ui.set(UiFlow::Title);
     commands
@@ -153,15 +149,6 @@ fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>
 }
 
 fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAssets>) {
-    println!(
-        "Player One Selected {}",
-        game_data.player_one.choice_selection.element
-    );
-    println!(
-        "Player Two Selected {}",
-        game_data.player_two.choice_selection.element
-    );
-
     commands
         .spawn((
             Node {
