@@ -1,4 +1,10 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy_tweening::{lens::UiBackgroundColorLens, Animator, Tween};
+
+const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
+const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
 use crate::{
     combo::{GameData, PlayerData},
@@ -6,7 +12,7 @@ use crate::{
     helper::{despawn, hide, show},
     schedule::GameSet,
     state::{GameFlow, UiFlow},
-    types::Player,
+    types::{Outcome, Player},
 };
 
 use super::{
@@ -130,7 +136,7 @@ fn handle_countdown(
                 next_ui_flow.set(UiFlow::Reveal);
             }
             // Go to the next stage after the reveal
-            UiFlow::Reveal => next_ui_flow.set(UiFlow::Title),
+            UiFlow::Reveal => next_game_flow.set(GameFlow::ResolveAction),
         }
     }
 }
@@ -164,7 +170,40 @@ fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>
     }
 }
 
+fn won_tween() -> Tween<BackgroundColor> {
+    Tween::new(
+        EaseFunction::QuadraticInOut,
+        Duration::from_secs(1),
+        UiBackgroundColorLens {
+            start: Color::WHITE,
+            end: WON_COLOUR,
+        },
+    )
+}
+
+fn loss_tween() -> Tween<BackgroundColor> {
+    Tween::new(
+        EaseFunction::QuadraticInOut,
+        Duration::from_secs(1),
+        UiBackgroundColorLens {
+            start: Color::WHITE,
+            end: LOSS_COLOUR,
+        },
+    )
+}
+
 fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAssets>) {
+    let result = game_data.get_action_result();
+    let player_one_tween = match result.outcome {
+        Outcome::PlayerOne => won_tween(),
+        _ => loss_tween(),
+    };
+
+    let player_two_tween = match result.outcome {
+        Outcome::PlayerTwo => won_tween(),
+        _ => loss_tween(),
+    };
+
     commands
         .spawn((
             Node {
@@ -193,6 +232,7 @@ fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAss
                     BorderColor(Color::BLACK),
                     BorderRadius::MAX,
                     BackgroundColor(Color::WHITE),
+                    Animator::new(player_one_tween),
                 ))
                 .with_child((
                     ImageNode::new(ui_assets.get_icon(game_data.get_action(Player::One))),
@@ -216,9 +256,10 @@ fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAss
                     BorderColor(Color::BLACK),
                     BorderRadius::MAX,
                     BackgroundColor(Color::WHITE),
+                    Animator::new(player_two_tween),
                 ))
                 .with_child((
-                    ImageNode::new(ui_assets.get_icon(game_data.get_action(Player::One))),
+                    ImageNode::new(ui_assets.get_icon(game_data.get_action(Player::Two))),
                     Node {
                         width: Val::Px(75.0),
                         height: Val::Px(75.0),

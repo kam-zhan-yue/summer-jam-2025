@@ -115,6 +115,10 @@ impl GameData {
         return winner;
     }
 
+    pub fn get_action_result(&self) -> ResolveResult {
+        self.resolve(|player| player.choice_selection.action)
+    }
+
     pub fn get_result(&self, beat: i32) -> ResolveResult {
         let result = if beat == 1 {
             println!("=========Element=========");

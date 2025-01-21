@@ -23,6 +23,6 @@ impl Plugin for GameUIPlugin {
         app.add_plugins(TitlePlugin);
         // app.add_plugins(ResolvePlugin);
         // app.add_plugins(EndTurnPlugin);
-        // app.add_plugins(EffectsPlugin);
+        app.add_plugins(EffectsPlugin);
     }
 }
