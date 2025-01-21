@@ -1,9 +1,33 @@
 use bevy::prelude::*;
 
+use crate::types::{Choice, Element, Tool};
+
 #[derive(Resource, Debug, Default)]
 pub struct UiAssets {
     pub heart_broken: Handle<Image>,
     pub heart_full: Handle<Image>,
+    pub empty: Handle<Image>,
+    pub element_fire: Handle<Image>,
+    pub element_grass: Handle<Image>,
+    pub element_water: Handle<Image>,
+    pub tool_hand: Handle<Image>,
+    pub tool_toilet: Handle<Image>,
+    pub tool_underwear: Handle<Image>,
+    pub fira_sans_bold: Handle<Font>,
+}
+
+impl UiAssets {
+    pub fn get_icon(&self, choice: Choice) -> Handle<Image> {
+        match choice {
+            Choice::None => self.empty.clone(),
+            Choice::Tool(Tool::Hand) => self.tool_hand.clone(),
+            Choice::Tool(Tool::Toilet) => self.tool_toilet.clone(),
+            Choice::Tool(Tool::Underwear) => self.tool_underwear.clone(),
+            Choice::Element(Element::Fire) => self.element_fire.clone(),
+            Choice::Element(Element::Water) => self.element_water.clone(),
+            Choice::Element(Element::Grass) => self.element_grass.clone(),
+        }
+    }
 }
 
 #[derive(Component, Debug)]
@@ -17,6 +41,14 @@ impl Plugin for UiAssetsPlugin {
 }
 
 fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
+    ui_assets.empty = asset_server.load("ui/empty.png");
     ui_assets.heart_broken = asset_server.load("ui/heart_broken.png");
     ui_assets.heart_full = asset_server.load("ui/heart_full.png");
+    ui_assets.element_fire = asset_server.load("ui/element_fire.png");
+    ui_assets.element_grass = asset_server.load("ui/element_grass.png");
+    ui_assets.element_water = asset_server.load("ui/element_water.png");
+    ui_assets.tool_toilet = asset_server.load("ui/tool_toilet.png");
+    ui_assets.tool_hand = asset_server.load("ui/tool_hand.png");
+    ui_assets.tool_underwear = asset_server.load("ui/tool_underwear.png");
+    ui_assets.fira_sans_bold = asset_server.load("fonts/FiraSans-Bold.ttf");
 }

@@ -12,15 +12,15 @@ pub enum Choice {
     #[default]
     None,
     Tool(Tool),
-    Location(Element),
+    Element(Element),
 }
 
 impl fmt::Display for Choice {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Choice::None => write!(f, "None"),
-            Choice::Tool(tool) => write!(f, "Tool: {}", tool),
-            Choice::Location(location) => write!(f, "Location: {}", location),
+            Choice::Tool(tool) => write!(f, "{}", tool),
+            Choice::Element(location) => write!(f, "{}", location),
         }
     }
 }
@@ -30,7 +30,7 @@ pub enum Tool {
     #[default]
     Toilet,
     Underwear,
-    Lighter,
+    Hand,
 }
 
 impl fmt::Display for Tool {
@@ -38,7 +38,7 @@ impl fmt::Display for Tool {
         match self {
             Tool::Toilet => write!(f, "Toilet"),
             Tool::Underwear => write!(f, "Underwear"),
-            Tool::Lighter => write!(f, "Lighter"),
+            Tool::Hand => write!(f, "Hand"),
         }
     }
 }
@@ -49,11 +49,11 @@ impl Ord for Tool {
         match (self, other) {
             (Toilet, Toilet) => Ordering::Equal,
             (Underwear, Underwear) => Ordering::Equal,
-            (Lighter, Lighter) => Ordering::Equal,
-            (Toilet, Lighter) => Ordering::Greater,
-            (Lighter, Toilet) => Ordering::Less,
-            (Lighter, Underwear) => Ordering::Greater,
-            (Underwear, Lighter) => Ordering::Less,
+            (Hand, Hand) => Ordering::Equal,
+            (Toilet, Hand) => Ordering::Greater,
+            (Hand, Toilet) => Ordering::Less,
+            (Hand, Underwear) => Ordering::Greater,
+            (Underwear, Hand) => Ordering::Less,
             (Underwear, Toilet) => Ordering::Greater,
             (Toilet, Underwear) => Ordering::Less,
         }

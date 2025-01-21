@@ -18,8 +18,8 @@ pub struct ChoiceSelection {
 impl ChoiceSelection {
     pub fn get_choice(self, beat: i32) -> Choice {
         match beat {
-            1 => self.tool,
-            2 => self.element,
+            1 => self.element,
+            2 => self.tool,
             _ => Choice::None,
         }
     }
@@ -42,6 +42,12 @@ pub struct PlayerData {
     pub health: i32,
 }
 
+impl PlayerData {
+    fn get_choice(&self, beat: i32) -> Choice {
+        self.choice_selection.get_choice(beat)
+    }
+}
+
 impl Default for PlayerData {
     fn default() -> Self {
         Self {
@@ -58,6 +64,13 @@ pub struct GameData {
 }
 
 impl GameData {
+    pub fn get_choice(&self, player: Player, beat: i32) -> Choice {
+        match player {
+            Player::One => self.player_one.get_choice(beat),
+            Player::Two => self.player_two.get_choice(beat),
+        }
+    }
+
     pub fn reset(&mut self) {
         self.player_one.choice_selection = ChoiceSelection::default();
         self.player_two.choice_selection = ChoiceSelection::default();
@@ -197,21 +210,21 @@ fn setup_game(
         KeyCode::KeyA,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            element: Choice::Location(Element::Water),
+            element: Choice::Element(Element::Water),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyS,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            element: Choice::Location(Element::Grass),
+            element: Choice::Element(Element::Grass),
         },
     );
     player_one_inputs.insert(
         KeyCode::KeyD,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Lighter),
-            element: Choice::Location(Element::Fire),
+            tool: Choice::Tool(Tool::Hand),
+            element: Choice::Element(Element::Fire),
         },
     );
 
@@ -220,21 +233,21 @@ fn setup_game(
         KeyCode::KeyJ,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Toilet),
-            element: Choice::Location(Element::Water),
+            element: Choice::Element(Element::Water),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyK,
         ChoiceSelection {
             tool: Choice::Tool(Tool::Underwear),
-            element: Choice::Location(Element::Grass),
+            element: Choice::Element(Element::Grass),
         },
     );
     player_two_inputs.insert(
         KeyCode::KeyL,
         ChoiceSelection {
-            tool: Choice::Tool(Tool::Lighter),
-            element: Choice::Location(Element::Fire),
+            tool: Choice::Tool(Tool::Hand),
+            element: Choice::Element(Element::Fire),
         },
     );
 

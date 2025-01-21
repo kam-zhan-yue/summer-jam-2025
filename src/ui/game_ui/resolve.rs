@@ -3,13 +3,15 @@ use crate::helper::despawn;
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::GameFlow;
-use crate::types::Outcome;
+use crate::types::{Outcome, Player};
 use bevy::prelude::*;
+
+use super::ui_assets::UiAssets;
 
 const LOSE_COLOUR: Color = Color::srgb(0.3, 0.3, 0.3);
 const WIN_COLOUR: Color = Color::srgb(0.0, 0.8, 0.2);
-const RESOLVE_TIME: f32 = 2.;
-const REVEAL_TIME: f32 = 2.;
+const RESOLVE_TIME: f32 = 1.2;
+const REVEAL_TIME: f32 = 1.2;
 
 #[derive(Component, Debug)]
 struct Resolve {
@@ -47,7 +49,7 @@ impl Plugin for ResolvePlugin {
 
 fn setup(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
+    ui_assets: Res<UiAssets>,
     game_data: Res<GameData>,
     rhythm: Res<Rhythm>,
 ) {
@@ -84,19 +86,14 @@ fn setup(
                     BackgroundColor(Color::WHITE),
                 ))
                 .with_child((
-                    Text::new(
-                        game_data
-                            .player_one
-                            .choice_selection
-                            .get_choice(rhythm.beat)
-                            .to_string(),
+                    ImageNode::new(
+                        ui_assets.get_icon(game_data.get_choice(Player::One, rhythm.beat)),
                     ),
-                    TextFont {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                        font_size: 16.0,
+                    Node {
+                        width: Val::Px(75.0),
+                        height: Val::Px(75.0),
                         ..default()
                     },
-                    TextColor(Color::BLACK),
                 ));
             parent
                 .spawn((
@@ -114,19 +111,14 @@ fn setup(
                     BackgroundColor(Color::WHITE),
                 ))
                 .with_child((
-                    Text::new(
-                        game_data
-                            .player_two
-                            .choice_selection
-                            .get_choice(rhythm.beat)
-                            .to_string(),
+                    ImageNode::new(
+                        ui_assets.get_icon(game_data.get_choice(Player::Two, rhythm.beat)),
                     ),
-                    TextFont {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                        font_size: 16.0,
+                    Node {
+                        width: Val::Px(75.0),
+                        height: Val::Px(75.0),
                         ..default()
                     },
-                    TextColor(Color::BLACK),
                 ));
         });
 }

@@ -1,6 +1,6 @@
 use crate::combo::ChoiceEvent;
 use crate::helper::{hide, show};
-use crate::rhythm::BEAT_LIMIT;
+use crate::rhythm::{Rhythm, BEAT_LIMIT};
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
 use crate::types::{Choice, Player};
@@ -31,7 +31,10 @@ impl Plugin for ChoicesPlugin {
                 .run_if(in_state(GameState::Game)),
         );
         app.add_systems(OnEnter(GameFlow::Reveal), hide::<ChoicesPopup>);
-        app.add_systems(OnExit(GameFlow::Reveal), show::<ChoicesPopup>);
+        app.add_systems(
+            OnExit(GameFlow::Reveal),
+            (show::<ChoicesPopup>, on_show_choices),
+        );
     }
 }
 
@@ -131,6 +134,7 @@ fn read_choices(
             if let Ok(popup_children) = choice_popup_items.get(choice_popup_item) {
                 if let Some(&child) = popup_children.get(0) {
                     if let Ok(mut text) = text_query.get_mut(child) {
+                        // Do an animation here instead?
                         update_choices(choice.choice, choice.beat, &mut text);
                     }
                 }
@@ -141,4 +145,19 @@ fn read_choices(
 
 fn update_choices(choice: Choice, beat: i32, text: &mut Text) {
     **text = choice.to_string();
+}
+
+fn on_show_choices(
+    player_one_choices: Query<&Children, With<PlayerOneChoices>>,
+    player_two_choices: Query<&Children, With<PlayerTwoChoices>>,
+    choice_popup_items: Query<(&mut BackgroundColor, &Children), With<ChoicePopupItem>>,
+    mut text_query: Query<&mut Text>,
+    rhyhm: Res<Rhythm>,
+) {
+    let Ok(player_one_children) = player_one_choices.get_single() else {
+        return;
+    };
+    let Ok(player_two_children) = player_two_choices.get_single() else {
+        return;
+    };
 }
