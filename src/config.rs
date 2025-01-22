@@ -1,5 +1,5 @@
 // Max Health of the player
-pub const MAX_HEALTH: i32 = 5;
+pub const MAX_HEALTH: i32 = 4;
 
 // Time Spent Displaying Transition Titles
 pub const TITLE_TIME: f32 = 1.0;
