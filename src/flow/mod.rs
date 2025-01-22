@@ -15,7 +15,7 @@ use round_start::RoundStartPlugin;
 use select_action::SelectActionPlugin;
 use select_element::SelectElementPlugin;
 
-use crate::{schedule::GameSet, state::GameFlow};
+use crate::{schedule::GameSet, state::GameState};
 
 const TITLE_TIME: f32 = 1.0;
 const COUNTDOWN_TIME: f32 = 2.0;
@@ -61,19 +61,19 @@ impl Plugin for FlowPlugin {
 }
 
 fn handle_flow(
-    current_flow: Res<State<GameFlow>>,
-    mut next_flow: ResMut<NextState<GameFlow>>,
+    current_flow: Res<State<GameState>>,
+    mut next_flow: ResMut<NextState<GameState>>,
     mut flow: ResMut<Flow>,
     time: Res<Time>,
 ) {
     flow.tick(time.delta());
     if flow.timer.just_finished() {
         match current_flow.get() {
-            GameFlow::RoundStart => next_flow.set(GameFlow::SelectElement),
-            GameFlow::SelectElement => next_flow.set(GameFlow::SelectAction),
-            GameFlow::SelectAction => next_flow.set(GameFlow::ResolveAction),
-            GameFlow::ResolveAction => next_flow.set(GameFlow::RoundOver),
-            GameFlow::RoundOver => next_flow.set(GameFlow::SelectElement),
+            GameState::GameStart => next_flow.set(GameState::SelectElement),
+            GameState::SelectElement => next_flow.set(GameState::SelectAction),
+            GameState::SelectAction => next_flow.set(GameState::ResolveAction),
+            GameState::ResolveAction => next_flow.set(GameState::GameOver),
+            GameState::GameOver => next_flow.set(GameState::SelectElement),
             _ => (),
         }
     }

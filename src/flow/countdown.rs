@@ -6,7 +6,7 @@ use crate::{
     globals::UiAssets,
     helper::{hide, show},
     schedule::GameSet,
-    state::{GameState, UiFlow},
+    state::{GameState, UiState},
 };
 
 #[derive(Resource)]
@@ -43,17 +43,17 @@ pub struct CountdownPlugin;
 impl Plugin for CountdownPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Countdown>();
-        app.add_systems(OnEnter(GameState::Game), setup);
+        app.add_systems(OnEnter(GameState::GameStart), setup);
 
         // Showing, Updating, and Hiding the CountdownPopup
-        app.add_systems(OnEnter(UiFlow::Countdown), show::<CountdownPopup>);
+        app.add_systems(OnEnter(UiState::Countdown), show::<CountdownPopup>);
         app.add_systems(
             Update,
             update_timer
                 .in_set(GameSet::Ui)
-                .run_if(in_state(UiFlow::Countdown)),
+                .run_if(in_state(UiState::Countdown)),
         );
-        app.add_systems(OnExit(UiFlow::Countdown), hide::<CountdownPopup>);
+        app.add_systems(OnExit(UiState::Countdown), hide::<CountdownPopup>);
     }
 }
 

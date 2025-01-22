@@ -5,7 +5,7 @@ use crate::{
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
-    state::{GameFlow, UiFlow},
+    state::{GameState, UiState},
     types::Player,
 };
 
@@ -30,33 +30,33 @@ pub struct SelectElementPlugin;
 impl Plugin for SelectElementPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GameFlow::SelectElement),
+            OnEnter(GameState::SelectElement),
             on_enter.in_set(GameSet::Ui),
         );
         app.add_systems(
             Update,
             (handle_countdown, handle_input)
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::SelectElement)),
+                .run_if(in_state(GameState::SelectElement)),
         );
         // Hide the title when out of the Title Flow
         app.add_systems(
-            OnExit(UiFlow::Title),
+            OnExit(UiState::Title),
             despawn::<SelectElementTitle>
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::SelectElement)),
+                .run_if(in_state(GameState::SelectElement)),
         );
 
         app.add_systems(
-            OnEnter(UiFlow::Reveal),
+            OnEnter(UiState::Reveal),
             reveal
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::SelectElement)),
+                .run_if(in_state(GameState::SelectElement)),
         );
 
         // Depsawn after exiting SelectElement
         app.add_systems(
-            OnExit(GameFlow::SelectElement),
+            OnExit(GameState::SelectElement),
             (despawn::<RevealElementPopup>, despawn::<SelectElementPopup>).in_set(GameSet::Ui),
         );
     }
@@ -66,10 +66,10 @@ fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
     mut countdown: ResMut<Countdown>,
-    mut next_ui: ResMut<NextState<UiFlow>>,
+    mut next_ui: ResMut<NextState<UiState>>,
 ) {
     countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
-    next_ui.set(UiFlow::Title);
+    next_ui.set(UiState::Title);
     println!("Entering Select Element");
     commands
         .spawn((
@@ -96,36 +96,36 @@ fn on_enter(
 
 fn handle_countdown(
     mut countdown: ResMut<Countdown>,
-    current_ui_flow: Res<State<UiFlow>>,
-    mut next_ui_flow: ResMut<NextState<UiFlow>>,
-    mut next_game_flow: ResMut<NextState<GameFlow>>,
+    current_ui_flow: Res<State<UiState>>,
+    mut next_ui_flow: ResMut<NextState<UiState>>,
+    mut next_game_flow: ResMut<NextState<GameState>>,
     time: Res<Time>,
 ) {
     countdown.tick(time.delta());
     if countdown.timer.just_finished() {
         match current_ui_flow.get() {
             // Go to the countdown after the title
-            UiFlow::Title => {
+            UiState::Title => {
                 countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
-                next_ui_flow.set(UiFlow::Countdown)
+                next_ui_flow.set(UiState::Countdown)
             }
             // Go to the reveal after the countdown
-            UiFlow::Countdown => {
+            UiState::Countdown => {
                 countdown.reset(Timer::from_seconds(REVEAL_TIME, TimerMode::Once));
-                next_ui_flow.set(UiFlow::Reveal);
+                next_ui_flow.set(UiState::Reveal);
             }
             // Go to the next stage after the reveal
-            UiFlow::Reveal => next_game_flow.set(GameFlow::SelectAction),
+            UiState::Reveal => next_game_flow.set(GameState::SelectAction),
         }
     }
 }
 
 fn handle_input(
-    current_ui_flow: Res<State<UiFlow>>,
+    current_ui_flow: Res<State<UiState>>,
     input: Res<ButtonInput<KeyCode>>,
     mut game_data: ResMut<GameData>,
 ) {
-    if *current_ui_flow.get() != UiFlow::Countdown {
+    if *current_ui_flow.get() != UiState::Countdown {
         return;
     }
     process_input(&mut game_data.player_one, &input);

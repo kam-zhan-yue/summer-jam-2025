@@ -4,7 +4,7 @@ use crate::{
     globals::UiAssets,
     helper::{despawn, handle_buttons, NORMAL_BUTTON},
     schedule::GameSet,
-    state::GameFlow,
+    state::GameState,
 };
 
 #[derive(Component, Debug)]
@@ -17,14 +17,14 @@ pub struct RoundOverPlugin;
 
 impl Plugin for RoundOverPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameFlow::RoundOver), on_enter);
+        app.add_systems(OnEnter(GameState::GameOver), on_enter);
         app.add_systems(
             Update,
             (handle_buttons, handle_title_button)
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::RoundOver)),
+                .run_if(in_state(GameState::GameOver)),
         );
-        app.add_systems(OnExit(GameFlow::RoundOver), despawn::<RoundOverPopup>);
+        app.add_systems(OnExit(GameState::GameOver), despawn::<RoundOverPopup>);
     }
 }
 
@@ -98,13 +98,13 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
 
 fn handle_title_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<TitleButton>)>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
+    mut game_flow: ResMut<NextState<GameState>>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
-        game_flow.set(GameFlow::Title);
+        game_flow.set(GameState::Title);
     }
 }

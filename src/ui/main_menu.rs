@@ -1,6 +1,5 @@
 use crate::helper::{despawn, handle_buttons, NORMAL_BUTTON};
 use crate::schedule::GameSet;
-use crate::state::GameFlow;
 use crate::state::GameState;
 use bevy::prelude::*;
 
@@ -17,7 +16,7 @@ pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Start), spawn_main_menu);
+        app.add_systems(OnEnter(GameState::Title), spawn_main_menu);
         app.add_systems(
             Update,
             (
@@ -26,9 +25,9 @@ impl Plugin for MainMenuPlugin {
                 handle_two_player_button,
             )
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameState::Start)),
+                .run_if(in_state(GameState::Title)),
         );
-        app.add_systems(OnExit(GameState::Start), despawn::<MainMenu>);
+        app.add_systems(OnExit(GameState::Title), despawn::<MainMenu>);
     }
 }
 
@@ -130,30 +129,26 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn handle_single_player_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<SinglePlayerButton>)>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
+    mut game_flow: ResMut<NextState<GameState>>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
-        game_state.set(GameState::Game);
-        game_flow.set(GameFlow::Title);
+        game_flow.set(GameState::Title);
     }
 }
 
 fn handle_two_player_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<TwoPlayerButton>)>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
+    mut game_flow: ResMut<NextState<GameState>>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
-        game_state.set(GameState::Game);
-        game_flow.set(GameFlow::RoundStart);
+        game_flow.set(GameState::GameStart);
     }
 }

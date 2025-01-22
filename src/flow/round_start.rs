@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::helper::despawn;
 use crate::schedule::GameSet;
-use crate::{globals::UiAssets, state::GameFlow};
+use crate::{globals::UiAssets, state::GameState};
 
 use super::{Flow, ROUND_START_TIME};
 
@@ -13,9 +13,9 @@ struct RoundStartPopup;
 
 impl Plugin for RoundStartPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameFlow::RoundStart), on_enter.in_set(GameSet::Ui));
+        app.add_systems(OnEnter(GameState::GameStart), on_enter.in_set(GameSet::Ui));
         app.add_systems(
-            OnExit(GameFlow::RoundStart),
+            OnExit(GameState::GameStart),
             despawn::<RoundStartPopup>.in_set(GameSet::Ui),
         );
     }

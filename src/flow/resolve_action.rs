@@ -17,7 +17,7 @@ use crate::{
     events::ApplyEffectsEvent,
     globals::UiAssets,
     schedule::GameSet,
-    state::GameFlow,
+    state::GameState,
     types::{Outcome, Player},
 };
 
@@ -29,14 +29,14 @@ pub struct ResolveActionPlugin;
 impl Plugin for ResolveActionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GameFlow::ResolveAction),
+            OnEnter(GameState::ResolveAction),
             on_enter.in_set(GameSet::Ui),
         );
         app.add_systems(
             Update,
             update_next_flow
                 .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::ResolveAction)),
+                .run_if(in_state(GameState::ResolveAction)),
         );
     }
 }
@@ -111,7 +111,7 @@ fn update_next_flow(
     mut reader: EventReader<TweenCompleted>,
     mut writer: EventWriter<ApplyEffectsEvent>,
     mut game_data: ResMut<GameData>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
+    mut game_flow: ResMut<NextState<GameState>>,
     query: Query<Entity, With<TransitionTitle>>,
     ui_assets: Res<UiAssets>,
 ) {
@@ -162,20 +162,20 @@ fn update_next_flow(
                     commands.entity(entity).despawn_recursive();
                 }
                 game_data.action = 0;
-                game_flow.set(GameFlow::SelectElement);
+                game_flow.set(GameState::SelectElement);
             }
             COMBO_BREAKER => {
                 for entity in &query {
                     commands.entity(entity).despawn_recursive();
                 }
                 game_data.action = 0;
-                game_flow.set(GameFlow::SelectElement);
+                game_flow.set(GameState::SelectElement);
             }
             LOOP => {
                 for entity in &query {
                     commands.entity(entity).despawn_recursive();
                 }
-                game_flow.set(GameFlow::SelectAction);
+                game_flow.set(GameState::SelectAction);
             }
             _ => (),
         }
@@ -220,13 +220,13 @@ fn loop_action(
     commands: &mut Commands,
     result: &ResolveResult,
     game_data: &ResMut<GameData>,
-    game_flow: &mut ResMut<NextState<GameFlow>>,
+    game_flow: &mut ResMut<NextState<GameState>>,
     ui_assets: &Res<UiAssets>,
 ) {
     match (&result.outcome, &game_data.advantage) {
         (Outcome::PlayerOne, Player::Two) => combo_breaker(commands, &ui_assets),
         (Outcome::PlayerTwo, Player::One) => combo_breaker(commands, &ui_assets),
-        _ => game_flow.set(GameFlow::SelectAction),
+        _ => game_flow.set(GameState::SelectAction),
     }
 }
 
@@ -319,6 +319,6 @@ fn advantage(
         ));
 }
 
-fn game_over(game_flow: &mut ResMut<NextState<GameFlow>>) {
-    game_flow.set(GameFlow::RoundOver);
+fn game_over(game_flow: &mut ResMut<NextState<GameState>>) {
+    game_flow.set(GameState::GameOver);
 }

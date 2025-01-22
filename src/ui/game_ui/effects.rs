@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::combo::{GameData, MAX_HEALTH};
 use crate::events::ApplyEffectsEvent;
 use crate::schedule::GameSet;
-use crate::state::GameFlow;
+use crate::state::GameState;
 
 use crate::globals::UiAssets;
 
@@ -26,7 +26,7 @@ pub struct EffectsPlugin;
 
 impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameFlow::RoundStart), setup);
+        app.add_systems(OnEnter(GameState::GameStart), setup);
         app.add_systems(Update, apply_effects.in_set(GameSet::Ui));
     }
 }

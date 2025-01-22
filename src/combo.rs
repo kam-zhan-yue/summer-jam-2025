@@ -162,11 +162,11 @@ pub struct ComboPlugin;
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameData>();
+        app.add_systems(OnEnter(GameState::GameStart), setup_game);
         app.add_systems(
-            OnExit(GameState::Game),
+            OnExit(GameState::GameOver),
             (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),
         );
-        app.add_systems(OnEnter(GameState::Game), setup_game);
     }
 }
 
