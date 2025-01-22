@@ -13,14 +13,11 @@ pub enum GameFlow {
     #[default]
     None,
     Title,
-    Countdown,
-    Reveal,
 
     RoundStart,
     SelectElement,
     SelectAction,
     ResolveAction,
-    ComboBreaker,
     RoundOver,
 }
 

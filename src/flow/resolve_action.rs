@@ -112,7 +112,7 @@ fn update_next_flow(
     mut writer: EventWriter<ApplyEffectsEvent>,
     mut game_data: ResMut<GameData>,
     mut game_flow: ResMut<NextState<GameFlow>>,
-    mut query: Query<Entity, With<TransitionTitle>>,
+    query: Query<Entity, With<TransitionTitle>>,
     ui_assets: Res<UiAssets>,
 ) {
     for event in reader.read() {

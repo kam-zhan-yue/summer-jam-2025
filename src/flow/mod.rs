@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-mod combo_breaker;
 mod countdown;
 mod resolve_action;
 mod round_over;
@@ -9,7 +8,6 @@ mod round_start;
 mod select_action;
 mod select_element;
 
-use combo_breaker::ComboBreakerPlugin;
 use countdown::CountdownPlugin;
 use resolve_action::ResolveActionPlugin;
 use round_over::RoundOverPlugin;
@@ -23,8 +21,6 @@ const TITLE_TIME: f32 = 1.0;
 const COUNTDOWN_TIME: f32 = 2.0;
 const REVEAL_TIME: f32 = 2.0;
 const ROUND_START_TIME: f32 = 1.0;
-const SELECT_ELEMENT_TIME: f32 = 3.0;
-const SELECT_ACTION_TIME: f32 = 3.0;
 
 #[derive(Resource)]
 pub struct Flow {
@@ -58,7 +54,6 @@ impl Plugin for FlowPlugin {
         app.add_plugins(SelectElementPlugin);
         app.add_plugins(SelectActionPlugin);
         app.add_plugins(ResolveActionPlugin);
-        app.add_plugins(ComboBreakerPlugin);
         app.add_plugins(RoundOverPlugin);
         app.add_plugins(CountdownPlugin);
         app.add_systems(Update, handle_flow.in_set(GameSet::Flow));
@@ -77,8 +72,7 @@ fn handle_flow(
             GameFlow::RoundStart => next_flow.set(GameFlow::SelectElement),
             GameFlow::SelectElement => next_flow.set(GameFlow::SelectAction),
             GameFlow::SelectAction => next_flow.set(GameFlow::ResolveAction),
-            GameFlow::ResolveAction => next_flow.set(GameFlow::ComboBreaker),
-            GameFlow::ComboBreaker => next_flow.set(GameFlow::RoundOver),
+            GameFlow::ResolveAction => next_flow.set(GameFlow::RoundOver),
             GameFlow::RoundOver => next_flow.set(GameFlow::SelectElement),
             _ => (),
         }

@@ -1,7 +1,7 @@
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
-use crate::state::{GameFlow, GameState};
+use crate::state::GameState;
 use crate::types::{Action, Choice, Element, Outcome, Player};
 use bevy::prelude::*;
 use std::collections::HashMap;
@@ -16,14 +16,6 @@ pub struct ChoiceSelection {
 }
 
 impl ChoiceSelection {
-    pub fn get_choice(self, beat: i32) -> Choice {
-        match beat {
-            1 => self.element,
-            2 => self.action,
-            _ => Choice::None,
-        }
-    }
-
     pub fn can_double(self) -> bool {
         match (self.element, self.action) {
             (Choice::Element(Element::Fire), Choice::Action(Action::Hand)) => true,
@@ -52,12 +44,6 @@ pub struct PlayerData {
     pub input: PlayerInput,
 }
 
-impl PlayerData {
-    fn get_choice(&self, beat: i32) -> Choice {
-        self.choice_selection.get_choice(beat)
-    }
-}
-
 impl Default for PlayerData {
     fn default() -> Self {
         Self {
@@ -77,13 +63,6 @@ pub struct GameData {
 }
 
 impl GameData {
-    pub fn get_choice(&self, player: Player, beat: i32) -> Choice {
-        match player {
-            Player::One => self.player_one.get_choice(beat),
-            Player::Two => self.player_two.get_choice(beat),
-        }
-    }
-
     pub fn get_element(&self, player: Player) -> Choice {
         match player {
             Player::One => self.player_one.choice_selection.element,
@@ -137,22 +116,6 @@ impl GameData {
         }
         // Reset Choices
         self.reset_choice();
-    }
-
-    pub fn get_result(&self, beat: i32) -> ResolveResult {
-        let result = if beat == 1 {
-            println!("=========Element=========");
-            self.resolve(|player| player.choice_selection.element)
-        } else if beat == 2 {
-            println!("=========Tool=========");
-            self.resolve(|player| player.choice_selection.action)
-        } else {
-            ResolveResult {
-                outcome: Outcome::Draw,
-                choice: Choice::None,
-            }
-        };
-        return result;
     }
 
     pub fn resolve(&self, get_choice: fn(&PlayerData) -> Choice) -> ResolveResult {
