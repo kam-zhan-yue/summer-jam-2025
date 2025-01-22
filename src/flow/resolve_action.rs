@@ -1,18 +1,28 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{lens::UiPositionLens, Animator, Tween, TweenCompleted};
+use bevy_tweening::{
+    lens::{TransformScaleLens, UiPositionLens},
+    Animator, Tween, TweenCompleted,
+};
 
 const RESOLVE_COMPLETE_ID: u64 = 1;
+const BACK_TO_ELEMENT: u64 = 2;
+const LOOP: u64 = 3;
+const COMBO_BREAKER: u64 = 4;
 
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
-    combo::GameData,
+    combo::{GameData, ResolveResult},
     events::ApplyEffectsEvent,
     globals::UiAssets,
     schedule::GameSet,
     state::GameFlow,
+    types::{Outcome, Player},
 };
+
+#[derive(Component, Debug)]
+struct TransitionTitle;
 
 pub struct ResolveActionPlugin;
 
@@ -24,7 +34,7 @@ impl Plugin for ResolveActionPlugin {
         );
         app.add_systems(
             Update,
-            move_out_completed
+            update_next_flow
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameFlow::ResolveAction)),
         );
@@ -96,13 +106,219 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
     ));
 }
 
-fn move_out_completed(
+fn update_next_flow(
+    mut commands: Commands,
     mut reader: EventReader<TweenCompleted>,
     mut writer: EventWriter<ApplyEffectsEvent>,
+    mut game_data: ResMut<GameData>,
+    mut game_flow: ResMut<NextState<GameFlow>>,
+    mut query: Query<Entity, With<TransitionTitle>>,
+    ui_assets: Res<UiAssets>,
 ) {
     for event in reader.read() {
-        if event.user_data == RESOLVE_COMPLETE_ID {
-            writer.send(ApplyEffectsEvent::default());
+        match event.user_data {
+            RESOLVE_COMPLETE_ID => {
+                let result = game_data.get_action_result();
+                game_data.process_turn();
+
+                writer.send(ApplyEffectsEvent::default());
+                if game_data.can_end_game() {
+                    game_over(&mut game_flow);
+                } else {
+                    match (&result.outcome, game_data.action) {
+                        (Outcome::Draw, 1) => back_to_element(&mut commands, &ui_assets),
+                        (Outcome::Draw, _) => loop_action(
+                            &mut commands,
+                            &result,
+                            &game_data,
+                            &mut game_flow,
+                            &ui_assets,
+                        ),
+                        (Outcome::PlayerOne, 1) => {
+                            advantage(&mut commands, &result, &mut game_data, &ui_assets)
+                        }
+                        (Outcome::PlayerTwo, 1) => {
+                            advantage(&mut commands, &result, &mut game_data, &ui_assets)
+                        }
+                        (Outcome::PlayerOne, _) => loop_action(
+                            &mut commands,
+                            &result,
+                            &game_data,
+                            &mut game_flow,
+                            &ui_assets,
+                        ),
+                        (Outcome::PlayerTwo, _) => loop_action(
+                            &mut commands,
+                            &result,
+                            &game_data,
+                            &mut game_flow,
+                            &ui_assets,
+                        ),
+                    }
+                }
+            }
+            BACK_TO_ELEMENT => {
+                for entity in &query {
+                    commands.entity(entity).despawn_recursive();
+                }
+                game_data.action = 0;
+                game_flow.set(GameFlow::SelectElement);
+            }
+            COMBO_BREAKER => {
+                for entity in &query {
+                    commands.entity(entity).despawn_recursive();
+                }
+                game_data.action = 0;
+                game_flow.set(GameFlow::SelectElement);
+            }
+            LOOP => {
+                for entity in &query {
+                    commands.entity(entity).despawn_recursive();
+                }
+                game_flow.set(GameFlow::SelectAction);
+            }
+            _ => (),
         }
     }
+}
+
+fn back_to_element(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
+    let tween_scale = Tween::new(
+        EaseFunction::BounceOut,
+        Duration::from_millis(1500),
+        TransformScaleLens {
+            start: Vec3::splat(0.01),
+            end: Vec3::ONE,
+        },
+    )
+    .with_completed_event(BACK_TO_ELEMENT);
+    // Show a title, then go back to the element stage
+    commands
+        .spawn((
+            TransitionTitle,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+        ))
+        .with_child((
+            Text::new("No Advantage. Restarting Round."),
+            TextFont {
+                font_size: 32.0,
+                font: ui_assets.fira_sans_bold.clone(),
+                ..default()
+            },
+            TextColor(Color::BLACK),
+            Animator::new(tween_scale),
+        ));
+}
+
+fn loop_action(
+    commands: &mut Commands,
+    result: &ResolveResult,
+    game_data: &ResMut<GameData>,
+    game_flow: &mut ResMut<NextState<GameFlow>>,
+    ui_assets: &Res<UiAssets>,
+) {
+    match (&result.outcome, &game_data.advantage) {
+        (Outcome::PlayerOne, Player::Two) => combo_breaker(commands, &ui_assets),
+        (Outcome::PlayerTwo, Player::One) => combo_breaker(commands, &ui_assets),
+        _ => game_flow.set(GameFlow::SelectAction),
+    }
+}
+
+fn combo_breaker(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
+    let tween_scale = Tween::new(
+        EaseFunction::BounceOut,
+        Duration::from_millis(1500),
+        TransformScaleLens {
+            start: Vec3::splat(0.01),
+            end: Vec3::ONE,
+        },
+    )
+    .with_completed_event(COMBO_BREAKER);
+    // Show a title, then go back to the element stage
+    commands
+        .spawn((
+            TransitionTitle,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+        ))
+        .with_child((
+            Text::new("COMBO BREAKER!\nRestarting Round."),
+            TextFont {
+                font_size: 32.0,
+                font: ui_assets.fira_sans_bold.clone(),
+                ..default()
+            },
+            TextColor(Color::BLACK),
+            Animator::new(tween_scale),
+        ));
+}
+
+fn advantage(
+    commands: &mut Commands,
+    result: &ResolveResult,
+    game_data: &mut ResMut<GameData>,
+    ui_assets: &Res<UiAssets>,
+) {
+    let mut text = String::from("NONE");
+    match result.outcome {
+        Outcome::PlayerOne => {
+            text = "Player One has the Advantage!\nThe combat will continue until Player One loses"
+                .to_string();
+            game_data.advantage = Player::One
+        }
+        Outcome::PlayerTwo => {
+            text = "Player Two has the Advantage!\nThe combat will continue until Player Two loses"
+                .to_string();
+            game_data.advantage = Player::Two
+        }
+
+        _ => (),
+    }
+
+    let tween_scale = Tween::new(
+        EaseFunction::BounceOut,
+        Duration::from_millis(1500),
+        TransformScaleLens {
+            start: Vec3::splat(0.01),
+            end: Vec3::ONE,
+        },
+    )
+    .with_completed_event(LOOP);
+    // Show a title, then go back to the element stage
+    commands
+        .spawn((
+            TransitionTitle,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+        ))
+        .with_child((
+            Text::new(text),
+            TextFont {
+                font_size: 32.0,
+                font: ui_assets.fira_sans_bold.clone(),
+                ..default()
+            },
+            TextColor(Color::BLACK),
+            Animator::new(tween_scale),
+        ));
+}
+
+fn game_over(game_flow: &mut ResMut<NextState<GameFlow>>) {
+    game_flow.set(GameFlow::RoundOver);
 }

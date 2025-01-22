@@ -1,8 +1,9 @@
 use std::cmp::Ordering;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub enum Player {
+    #[default]
     One,
     Two,
 }

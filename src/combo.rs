@@ -22,6 +22,15 @@ impl ChoiceSelection {
             _ => Choice::None,
         }
     }
+
+    pub fn can_double(self) -> bool {
+        match (self.element, self.action) {
+            (Choice::Element(Element::Fire), Choice::Action(Action::Hand)) => true,
+            (Choice::Element(Element::Water), Choice::Action(Action::Toilet)) => true,
+            (Choice::Element(Element::Grass), Choice::Action(Action::Underwear)) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -62,6 +71,8 @@ impl Default for PlayerData {
 pub struct GameData {
     pub player_one: PlayerData,
     pub player_two: PlayerData,
+    pub action: u32,
+    pub advantage: Player,
 }
 
 impl GameData {
@@ -117,6 +128,32 @@ impl GameData {
 
     pub fn get_action_result(&self) -> ResolveResult {
         self.resolve(|player| player.choice_selection.action)
+    }
+
+    pub fn process_turn(&mut self) {
+        // Increment Action by One
+        self.action += 1;
+        // Update Healths
+        let result = self.get_action_result();
+        match result.outcome {
+            Outcome::PlayerOne => {
+                if self.player_one.choice_selection.can_double() {
+                    self.player_two.health -= 2;
+                } else {
+                    self.player_two.health -= 1;
+                }
+            }
+            Outcome::PlayerTwo => {
+                if self.player_two.choice_selection.can_double() {
+                    self.player_one.health -= 2;
+                } else {
+                    self.player_one.health -= 1;
+                }
+            }
+            Outcome::Draw => (),
+        }
+        // Reset Choices
+        self.reset();
     }
 
     pub fn get_result(&self, beat: i32) -> ResolveResult {

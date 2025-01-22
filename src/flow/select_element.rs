@@ -6,7 +6,7 @@ use crate::{
     helper::despawn,
     schedule::GameSet,
     state::{GameFlow, UiFlow},
-    types::{Choice, Element, Player},
+    types::Player,
 };
 
 use super::{countdown::Countdown, COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME};
@@ -70,6 +70,7 @@ fn on_enter(
 ) {
     countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
     next_ui.set(UiFlow::Title);
+    println!("Entering Select Element");
     commands
         .spawn((
             Node {

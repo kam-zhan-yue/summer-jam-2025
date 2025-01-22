@@ -21,8 +21,8 @@ use select_element::SelectElementPlugin;
 use crate::{schedule::GameSet, state::GameFlow};
 
 const TITLE_TIME: f32 = 1.0;
-const COUNTDOWN_TIME: f32 = 3.0;
-const REVEAL_TIME: f32 = 3.0;
+const COUNTDOWN_TIME: f32 = 2.0;
+const REVEAL_TIME: f32 = 2.0;
 const ROUND_START_TIME: f32 = 1.0;
 const SELECT_ELEMENT_TIME: f32 = 3.0;
 const SELECT_ACTION_TIME: f32 = 3.0;
