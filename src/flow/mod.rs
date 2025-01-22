@@ -17,11 +17,6 @@ use select_element::SelectElementPlugin;
 
 use crate::{schedule::GameSet, state::GameState};
 
-const TITLE_TIME: f32 = 1.0;
-const COUNTDOWN_TIME: f32 = 2.0;
-const REVEAL_TIME: f32 = 2.0;
-const ROUND_START_TIME: f32 = 1.0;
-
 #[derive(Resource)]
 pub struct Flow {
     pub timer: Timer,

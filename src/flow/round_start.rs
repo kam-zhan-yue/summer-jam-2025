@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
+use crate::config::ROUND_START_TIME;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::{globals::UiAssets, state::GameState};
 
-use super::{Flow, ROUND_START_TIME};
+use super::Flow;
 
 pub struct RoundStartPlugin;
 

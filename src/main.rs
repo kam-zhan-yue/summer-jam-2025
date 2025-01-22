@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 mod camera;
 mod combo;
+mod config;
 mod events;
 mod flow;
 mod globals;

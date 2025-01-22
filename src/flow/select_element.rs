@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     combo::{GameData, PlayerData},
+    config::{COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME},
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
@@ -9,7 +10,7 @@ use crate::{
     types::Player,
 };
 
-use super::{countdown::Countdown, COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME};
+use super::countdown::Countdown;
 
 #[derive(Component, Debug)]
 struct SelectElementPopup;

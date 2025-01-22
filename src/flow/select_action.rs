@@ -8,6 +8,7 @@ const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
 use crate::{
     combo::{GameData, PlayerData},
+    config::{COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME},
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -15,7 +16,7 @@ use crate::{
     types::{Outcome, Player},
 };
 
-use super::{countdown::Countdown, COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME};
+use super::countdown::Countdown;
 
 #[derive(Component, Debug)]
 struct SelectActionPopup;

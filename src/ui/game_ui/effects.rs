@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
-use crate::combo::{GameData, MAX_HEALTH};
+use crate::combo::GameData;
+use crate::config::MAX_HEALTH;
 use crate::events::ApplyEffectsEvent;
+use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::state::GameState;
 
@@ -28,6 +30,10 @@ impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::GameStart), setup);
         app.add_systems(Update, apply_effects.in_set(GameSet::Ui));
+        app.add_systems(
+            OnEnter(GameState::GameOver),
+            (despawn::<EffectsPopup>, despawn::<HealthPopup>).in_set(GameSet::Ui),
+        );
     }
 }
 

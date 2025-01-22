@@ -1,3 +1,4 @@
+use crate::config::MAX_HEALTH;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
@@ -7,7 +8,6 @@ use bevy::prelude::*;
 use std::collections::HashMap;
 
 const PLAYER_LENGTH: f32 = 1.4;
-pub const MAX_HEALTH: i32 = 3;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     globals::UiAssets,
-    helper::{hide, show},
+    helper::{despawn, hide, show},
     schedule::GameSet,
     state::{GameState, UiState},
 };
@@ -46,14 +46,25 @@ impl Plugin for CountdownPlugin {
         app.add_systems(OnEnter(GameState::GameStart), setup);
 
         // Showing, Updating, and Hiding the CountdownPopup
-        app.add_systems(OnEnter(UiState::Countdown), show::<CountdownPopup>);
+        app.add_systems(
+            OnEnter(UiState::Countdown),
+            show::<CountdownPopup>.in_set(GameSet::Ui),
+        );
         app.add_systems(
             Update,
             update_timer
                 .in_set(GameSet::Ui)
                 .run_if(in_state(UiState::Countdown)),
         );
-        app.add_systems(OnExit(UiState::Countdown), hide::<CountdownPopup>);
+        app.add_systems(
+            OnExit(UiState::Countdown),
+            hide::<CountdownPopup>.in_set(GameSet::Ui),
+        );
+
+        app.add_systems(
+            OnEnter(GameState::GameOver),
+            despawn::<CountdownPopup>.in_set(GameSet::Ui),
+        );
     }
 }
 
