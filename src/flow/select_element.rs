@@ -203,7 +203,7 @@ fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAss
                     BackgroundColor(Color::WHITE),
                 ))
                 .with_child((
-                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::One))),
+                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::Two))),
                     Node {
                         width: Val::Px(75.0),
                         height: Val::Px(75.0),

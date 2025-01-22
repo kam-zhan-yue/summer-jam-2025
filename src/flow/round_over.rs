@@ -61,6 +61,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                             font_size: 50.0,
                             ..default()
                         },
+                        TextColor::BLACK,
                         Label,
                     ));
                 });
