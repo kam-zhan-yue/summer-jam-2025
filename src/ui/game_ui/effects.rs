@@ -1,16 +1,11 @@
-use std::f32::consts::PI;
-
 use bevy::prelude::*;
 
 use crate::combo::{GameData, MAX_HEALTH};
 use crate::events::ApplyEffectsEvent;
-use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
-use crate::state::{GameFlow, GameState};
+use crate::state::GameFlow;
 
 use crate::globals::UiAssets;
-
-const EFFECTS_TIME: f32 = 2.0;
 
 #[derive(Component, Debug)]
 struct PlayerOneHealth;

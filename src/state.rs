@@ -15,8 +15,6 @@ pub enum GameFlow {
     Title,
     Countdown,
     Reveal,
-    EndTurn,
-    ApplyEffects,
 
     RoundStart,
     SelectElement,

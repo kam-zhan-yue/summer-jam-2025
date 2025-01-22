@@ -1,3 +1,4 @@
+use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::GameSettings;
 use crate::state::{GameFlow, GameState};
@@ -98,32 +99,14 @@ impl GameData {
     }
 
     pub fn reset(&mut self) {
-        self.player_one.choice_selection = ChoiceSelection::default();
-        self.player_two.choice_selection = ChoiceSelection::default();
+        self.player_one = PlayerData::default();
+        self.player_two = PlayerData::default();
+        self.action = 0;
     }
 
-    pub fn get_winner(&self) -> Outcome {
-        println!("=========RESOLVE=========");
-        let mut map: HashMap<Outcome, i32> = HashMap::new();
-
-        let tool = self.resolve(|player| player.choice_selection.action);
-        let location = self.resolve(|player| player.choice_selection.action);
-
-        *map.entry(tool.outcome).or_insert(0) += 1;
-        *map.entry(location.outcome).or_insert(0) += 1;
-
-        let player_one_wins = map.get(&Outcome::PlayerOne).unwrap_or(&0);
-        let player_two_wins = map.get(&Outcome::PlayerTwo).unwrap_or(&0);
-
-        let winner = if player_one_wins > player_two_wins {
-            Outcome::PlayerOne
-        } else if player_one_wins < player_two_wins {
-            Outcome::PlayerTwo
-        } else {
-            Outcome::Draw
-        };
-        println!("Overall Winner is: {:?}", winner);
-        return winner;
+    pub fn reset_choice(&mut self) {
+        self.player_one.choice_selection = ChoiceSelection::default();
+        self.player_two.choice_selection = ChoiceSelection::default();
     }
 
     pub fn get_action_result(&self) -> ResolveResult {
@@ -153,7 +136,7 @@ impl GameData {
             Outcome::Draw => (),
         }
         // Reset Choices
-        self.reset();
+        self.reset_choice();
     }
 
     pub fn get_result(&self, beat: i32) -> ResolveResult {
@@ -205,33 +188,10 @@ pub struct PlayerOne;
 #[derive(Component, Debug)]
 pub struct PlayerTwo;
 
-#[derive(Event, Debug)]
-pub struct ChoiceEvent {
-    pub choice: Choice,
-    pub player: Player,
-    pub beat: i32,
-}
-
-impl ChoiceEvent {
-    fn new(choice: Choice, player: Player, beat: i32) -> Self {
-        Self {
-            choice,
-            player,
-            beat,
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct ResolveResult {
     pub outcome: Outcome,
     pub choice: Choice,
-}
-
-impl ResolveResult {
-    fn new(outcome: Outcome, choice: Choice) -> Self {
-        Self { outcome, choice }
-    }
 }
 
 pub struct ComboPlugin;
@@ -239,12 +199,11 @@ pub struct ComboPlugin;
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameData>();
-        app.add_systems(OnEnter(GameState::Game), setup_game);
         app.add_systems(
-            OnEnter(GameFlow::EndTurn),
-            enter_resolve.in_set(GameSet::Resolve),
+            OnExit(GameState::Game),
+            (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),
         );
-        app.add_event::<ChoiceEvent>();
+        app.add_systems(OnEnter(GameState::Game), setup_game);
     }
 }
 
@@ -254,6 +213,7 @@ fn setup_game(
     asset_server: ResMut<AssetServer>,
     mut game_data: ResMut<GameData>,
 ) {
+    game_data.reset();
     let mut player_one_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
     player_one_inputs.insert(
         KeyCode::KeyA,
@@ -314,39 +274,4 @@ fn setup_game(
         PlayerTwo,
         Sprite::from_image(asset_server.load("sprites/stick_right.png")),
     ));
-}
-
-fn enter_resolve(mut game_state: ResMut<NextState<GameState>>, mut game_data: ResMut<GameData>) {
-    let winner = &game_data.get_winner();
-
-    update_outcome(&mut game_data, winner, &mut game_state);
-
-    game_data.reset();
-}
-
-fn update_outcome(
-    game_data: &mut ResMut<GameData>,
-    outcome: &Outcome,
-    game_state: &mut ResMut<NextState<GameState>>,
-) {
-    match outcome {
-        Outcome::PlayerOne => {
-            game_data.player_two.health -= 1;
-        }
-        Outcome::PlayerTwo => {
-            game_data.player_one.health -= 1;
-        }
-        Outcome::Draw => (),
-    }
-    check_end_game(game_data, game_state);
-}
-
-fn check_end_game(game_data: &mut GameData, game_state: &mut ResMut<NextState<GameState>>) {
-    if game_data.player_one.health <= 0 {
-        println!("Player Two Wins The Game!");
-        game_state.set(GameState::GameOver);
-    } else if game_data.player_two.health <= 0 {
-        println!("Player One Wins The Game!");
-        game_state.set(GameState::GameOver);
-    }
 }

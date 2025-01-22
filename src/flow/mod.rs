@@ -8,7 +8,6 @@ mod round_over;
 mod round_start;
 mod select_action;
 mod select_element;
-mod title;
 
 use combo_breaker::ComboBreakerPlugin;
 use countdown::CountdownPlugin;
