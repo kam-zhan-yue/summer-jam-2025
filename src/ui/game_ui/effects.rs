@@ -1,6 +1,9 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 
 use crate::combo::{GameData, MAX_HEALTH};
+use crate::events::ApplyEffectsEvent;
 use crate::rhythm::Rhythm;
 use crate::schedule::GameSet;
 use crate::state::{GameFlow, GameState};
@@ -22,32 +25,19 @@ struct HealthPopupItem;
 struct HealthPopup;
 
 #[derive(Component, Debug)]
-struct EffectsPopup {
-    timer: Timer,
-}
+struct EffectsPopup;
 
 pub struct EffectsPlugin;
 
 impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameFlow::RoundStart), setup);
-        app.add_systems(OnEnter(GameFlow::ApplyEffects), on_enter_apply_effects);
-        app.add_systems(
-            Update,
-            handle_timers
-                .in_set(GameSet::Ui)
-                .run_if(in_state(GameFlow::ApplyEffects)),
-        );
+        app.add_systems(Update, apply_effects.in_set(GameSet::Ui));
     }
 }
 
 fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
-    commands.spawn((
-        Name::new("EffectsPopup"),
-        EffectsPopup {
-            timer: Timer::from_seconds(EFFECTS_TIME, TimerMode::Once),
-        },
-    ));
+    commands.spawn((Name::new("EffectsPopup"), EffectsPopup));
     commands
         .spawn((
             Name::new("Health Popup"),
@@ -78,29 +68,6 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 &ui_assets,
             )
         });
-}
-
-fn handle_timers(
-    time: Res<Time>,
-    mut query: Query<&mut EffectsPopup>,
-    mut rhythm: ResMut<Rhythm>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut game_flow: ResMut<NextState<GameFlow>>,
-    game_data: Res<GameData>,
-) {
-    let Ok(mut effects_popup) = query.get_single_mut() else {
-        return;
-    };
-
-    effects_popup.timer.tick(time.delta());
-    if effects_popup.timer.just_finished() {
-        rhythm.reset();
-        if game_data.can_end_game() {
-            game_state.set(GameState::GameOver);
-        } else {
-            game_flow.set(GameFlow::Title);
-        }
-    }
 }
 
 fn spawn_health(
@@ -137,29 +104,32 @@ fn spawn_health(
         });
 }
 
-fn on_enter_apply_effects(
+fn apply_effects(
+    mut reader: EventReader<ApplyEffectsEvent>,
     player_one_health_popup: Query<&Children, With<PlayerOneHealth>>,
     player_two_health_popup: Query<&Children, With<PlayerTwoHealth>>,
     mut health_popup_items: Query<&mut ImageNode, With<HealthPopupItem>>,
     game_data: Res<GameData>,
     ui_assets: Res<UiAssets>,
 ) {
-    if let Ok(player_one_children) = player_one_health_popup.get_single() {
-        apply_health_effects(
-            player_one_children,
-            game_data.player_one.health,
-            &mut health_popup_items,
-            &ui_assets,
-        );
-    }
+    for _ in reader.read() {
+        if let Ok(player_one_children) = player_one_health_popup.get_single() {
+            apply_health_effects(
+                player_one_children,
+                game_data.player_one.health,
+                &mut health_popup_items,
+                &ui_assets,
+            );
+        }
 
-    if let Ok(player_two_children) = player_two_health_popup.get_single() {
-        apply_health_effects(
-            player_two_children,
-            game_data.player_two.health,
-            &mut health_popup_items,
-            &ui_assets,
-        );
+        if let Ok(player_two_children) = player_two_health_popup.get_single() {
+            apply_health_effects(
+                player_two_children,
+                game_data.player_two.health,
+                &mut health_popup_items,
+                &ui_assets,
+            );
+        }
     }
 }
 

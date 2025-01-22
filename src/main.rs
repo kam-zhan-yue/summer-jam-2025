@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 mod camera;
 mod combo;
+mod events;
 mod flow;
 mod globals;
 mod helper;
@@ -16,6 +17,7 @@ mod ui;
 use bevy_tweening::TweeningPlugin;
 use camera::CameraPlugin;
 use combo::ComboPlugin;
+use events::EventsPlugin;
 use flow::FlowPlugin;
 use globals::GlobalPlugin;
 use rhythm::RhythmPlugin;
@@ -28,6 +30,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(GlobalPlugin)
+        .add_plugins(EventsPlugin)
         .add_plugins(FlowPlugin)
         .add_plugins(RhythmPlugin)
         .add_plugins(CameraPlugin)

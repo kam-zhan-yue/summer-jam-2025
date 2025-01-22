@@ -1,11 +1,14 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{lens::UiPositionLens, Animator, Tween};
+use bevy_tweening::{lens::UiPositionLens, Animator, Tween, TweenCompleted};
+
+const RESOLVE_COMPLETE_ID: u64 = 1;
 
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
     combo::GameData,
+    events::ApplyEffectsEvent,
     globals::UiAssets,
     schedule::GameSet,
     state::GameFlow,
@@ -18,6 +21,12 @@ impl Plugin for ResolveActionPlugin {
         app.add_systems(
             OnEnter(GameFlow::ResolveAction),
             on_enter.in_set(GameSet::Ui),
+        );
+        app.add_systems(
+            Update,
+            move_out_completed
+                .in_set(GameSet::Ui)
+                .run_if(in_state(GameFlow::ResolveAction)),
         );
     }
 }
@@ -64,7 +73,8 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
                 bottom: Val::Auto,
             },
         },
-    );
+    )
+    .with_completed_event(RESOLVE_COMPLETE_ID);
 
     let sequence = move_in_tween.then(move_out_tween);
 
@@ -84,4 +94,15 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
         BorderColor(Color::BLACK),
         BorderRadius::ZERO,
     ));
+}
+
+fn move_out_completed(
+    mut reader: EventReader<TweenCompleted>,
+    mut writer: EventWriter<ApplyEffectsEvent>,
+) {
+    for event in reader.read() {
+        if event.user_data == RESOLVE_COMPLETE_ID {
+            writer.send(ApplyEffectsEvent::default());
+        }
+    }
 }
