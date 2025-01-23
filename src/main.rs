@@ -10,6 +10,7 @@ mod events;
 mod flow;
 mod globals;
 mod helper;
+mod juice;
 mod schedule;
 mod settings;
 mod state;
@@ -23,6 +24,7 @@ use computer::ComputerPlugin;
 use events::EventsPlugin;
 use flow::FlowPlugin;
 use globals::GlobalPlugin;
+use juice::JuicePlugin;
 use schedule::SchedulePlugin;
 use settings::SettingsPlugin;
 use state::StatePlugin;
@@ -42,6 +44,7 @@ fn main() {
         .add_plugins(UIPlugin)
         .add_plugins(TweeningPlugin)
         .add_plugins(ComputerPlugin)
+        .add_plugins(JuicePlugin)
         // .add_plugins(WorldInspectorPlugin::new())
         .run();
 }

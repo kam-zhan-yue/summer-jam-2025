@@ -22,7 +22,7 @@ pub fn move_in_tween(width: &f32, height: &f32) -> Tween<Node> {
         Duration::from_millis(ANIM_SCROLL_LEFT),
         UiPositionLens {
             start: UiRect {
-                left: Val::Px(-SCREEN_X - OFFSET - width),
+                left: Val::Px(-SCREEN_X as f32 - OFFSET - width),
                 top: Val::Px(SCREEN_Y / 2. - height / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
