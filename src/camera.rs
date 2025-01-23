@@ -1,7 +1,7 @@
 use bevy::{prelude::*, render::camera::SubCameraView};
 
-pub const SCREEN_X: f32 = 1400.;
-pub const SCREEN_Y: f32 = 600.;
+pub const SCREEN_X: f32 = 1300.;
+pub const SCREEN_Y: f32 = 750.;
 
 pub struct CameraPlugin;
 

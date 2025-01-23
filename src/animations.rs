@@ -2,10 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_tweening::{
-    lens::{
-        SpriteColorLens, TransformPositionLens, TransformScaleLens, UiBackgroundColorLens,
-        UiPositionLens,
-    },
+    lens::{TransformPositionLens, TransformScaleLens, UiBackgroundColorLens, UiPositionLens},
     Sequence, Tween,
 };
 
@@ -56,40 +53,50 @@ pub fn loss_sequence() -> Sequence<BackgroundColor> {
 
 const OFFSET: f32 = 500.;
 
-pub fn move_in_tween(width: &f32, height: &f32) -> Tween<Node> {
+pub fn move_in_tween(
+    screen_width: &f32,
+    screen_height: &f32,
+    width: &f32,
+    height: &f32,
+) -> Tween<Node> {
     return Tween::new(
         EaseFunction::QuarticOut,
         Duration::from_millis(ANIM_SCROLL_LEFT),
         UiPositionLens {
             start: UiRect {
-                left: Val::Px(-SCREEN_X as f32 - OFFSET - width),
-                top: Val::Px(SCREEN_Y / 2. - height / 2.),
+                left: Val::Px(-screen_width as f32 - OFFSET - width),
+                top: Val::Px(screen_height / 2. - height / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
             },
             end: UiRect {
-                left: Val::Px(SCREEN_X / 2. - width / 2.),
-                top: Val::Px(SCREEN_Y / 2. - height / 2.),
+                left: Val::Px(screen_width / 2. - width / 2.),
+                top: Val::Px(screen_height / 2. - height / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
             },
         },
     );
 }
-pub fn move_out_tween(width: &f32, height: &f32) -> Tween<Node> {
+pub fn move_out_tween(
+    screen_width: &f32,
+    screen_height: &f32,
+    width: &f32,
+    height: &f32,
+) -> Tween<Node> {
     Tween::new(
         EaseFunction::QuarticIn,
         Duration::from_millis(ANIM_SCROLL_RIGHT),
         UiPositionLens {
             start: UiRect {
-                left: Val::Px(SCREEN_X / 2. - width / 2.),
-                top: Val::Px(SCREEN_Y / 2. - height / 2.),
+                left: Val::Px(screen_width / 2. - width / 2.),
+                top: Val::Px(screen_height / 2. - height / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
             },
             end: UiRect {
-                left: Val::Px(SCREEN_X + OFFSET + width),
-                top: Val::Px(SCREEN_Y / 2. - height / 2.),
+                left: Val::Px(screen_width + OFFSET + width),
+                top: Val::Px(screen_height / 2. - height / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
             },

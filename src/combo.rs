@@ -11,7 +11,7 @@ use bevy::prelude::*;
 use bevy_tweening::Animator;
 use std::collections::HashMap;
 
-const PLAYER_LENGTH: f32 = 1.4;
+const PLAYER_LENGTH: f32 = 1.6;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
@@ -256,7 +256,7 @@ fn setup_game(
     }
 
     commands.spawn((
-        Transform::from_xyz(-300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Transform::from_xyz(-360., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerOne,
         Sprite {
             image: game_assets.player_one.clone(),
@@ -266,7 +266,7 @@ fn setup_game(
     ));
 
     commands.spawn((
-        Transform::from_xyz(300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+        Transform::from_xyz(360., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerTwo,
         Sprite {
             image: game_assets.player_two.clone(),

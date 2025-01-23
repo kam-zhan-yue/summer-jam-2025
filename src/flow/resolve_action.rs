@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tweening::{lens::TransformScaleLens, Animator, Delay, Sequence, Tween, TweenCompleted};
 
 const RESOLVE_COMPLETE_ID: u64 = 1;
@@ -22,16 +22,13 @@ use crate::{
     helper::despawn,
     schedule::GameSet,
     state::GameState,
-    types::{Outcome, Player},
+    types::{Choice, Outcome, Player},
 };
 
 #[derive(Component, Debug)]
 struct TransitionTitle;
 
 pub struct ResolveActionPlugin;
-
-#[derive(Component, Debug)]
-pub struct RevealActionPopup;
 
 #[derive(Component, Debug)]
 pub struct ResolveActionPopup;
@@ -61,7 +58,15 @@ impl Plugin for ResolveActionPlugin {
 const IMAGE_WIDTH: f32 = 800.;
 const IMAGE_HEIGHT: f32 = 400.;
 
-fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<GameData>) {
+fn on_enter(
+    mut commands: Commands,
+    ui_assets: Res<UiAssets>,
+    game_data: Res<GameData>,
+    window: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window.single();
+    let width = window.resolution.width();
+    let height = window.resolution.height();
     let result = game_data.get_action_result();
 
     let background_animation = fade_in().then(
@@ -88,9 +93,9 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
     };
 
     // Graphic Animation
-    let move_in_tween = move_in_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
+    let move_in_tween = move_in_tween(&width, &height, &IMAGE_WIDTH, &IMAGE_HEIGHT);
 
-    let move_out_tween = move_out_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
+    let move_out_tween = move_out_tween(&width, &height, &IMAGE_WIDTH, &IMAGE_HEIGHT);
 
     let sequence = Delay::new(Duration::from_millis(ANIM_FADE_IN_COLOUR))
         .with_completed_event(REMOVE_CHOICES)
@@ -107,15 +112,16 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Row,
+                align_content: AlignContent::Center,
                 align_items: AlignItems::Center,
+                align_self: AlignSelf::Center,
+                justify_content: JustifyContent::Center,
                 ..default()
             },
             BackgroundColor(TRANSPARENT),
             Animator::new(background_animation),
         ))
         .with_children(|parent| {
-            // Graphic Node
             parent.spawn((
                 Node {
                     width: Val::Px(800.0),
