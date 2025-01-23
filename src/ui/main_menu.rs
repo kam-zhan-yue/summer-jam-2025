@@ -1,5 +1,8 @@
+use crate::config::{
+    BORDER_RADIUS, BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M,
+};
 use crate::globals::UiAssets;
-use crate::helper::{despawn, handle_buttons, NORMAL_BUTTON};
+use crate::helper::{despawn, handle_buttons};
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
 use crate::state::GameState;
@@ -61,16 +64,14 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     ..default()
                 })
                 .with_children(|parent| {
-                    // Text
+                    // Logo
                     parent.spawn((
-                        Text::new("Swirlie, Wedgie, Whirlie!"),
-                        TextFont {
-                            font: ui_assets.ms_pain.clone(),
-                            font_size: 50.0,
+                        ImageNode::new(ui_assets.logo.clone()),
+                        Node {
+                            width: Val::Px(512.0),
+                            height: Val::Px(256.0),
                             ..default()
                         },
-                        TextColor(Color::BLACK),
-                        Label,
                     ));
                 });
             // Single Player Button
@@ -79,9 +80,9 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     SinglePlayerButton,
                     Button,
                     Node {
-                        width: Val::Px(150.0),
-                        height: Val::Px(40.0),
-                        border: UiRect::all(Val::Px(1.0)),
+                        width: BUTTON_WIDTH,
+                        height: BUTTON_HEIGHT,
+                        border: BUTTON_BORDER,
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
@@ -89,17 +90,17 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
                         ..default()
                     },
                     BorderColor(Color::BLACK),
-                    BorderRadius::all(Val::Px(5.0)),
+                    BorderRadius::all(BORDER_RADIUS),
                     BackgroundColor(NORMAL_BUTTON),
                 ))
                 .with_child((
                     Text::new("1 Player"),
                     TextFont {
                         font: ui_assets.ms_pain.clone(),
-                        font_size: 22.0,
+                        font_size: SIZE_M,
                         ..default()
                     },
-                    TextColor(Color::srgb(0.9, 0.9, 0.9)),
+                    TextColor::WHITE,
                 ));
             // Two Player Button
             parent
@@ -107,9 +108,9 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     TwoPlayerButton,
                     Button,
                     Node {
-                        width: Val::Px(150.0),
-                        height: Val::Px(40.0),
-                        border: UiRect::all(Val::Px(1.0)),
+                        width: BUTTON_WIDTH,
+                        height: BUTTON_HEIGHT,
+                        border: BUTTON_BORDER,
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
@@ -117,17 +118,17 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
                         ..default()
                     },
                     BorderColor(Color::BLACK),
-                    BorderRadius::all(Val::Px(5.0)),
+                    BorderRadius::all(BORDER_RADIUS),
                     BackgroundColor(NORMAL_BUTTON),
                 ))
                 .with_child((
                     Text::new("2 Players"),
                     TextFont {
                         font: ui_assets.ms_pain.clone(),
-                        font_size: 22.0,
+                        font_size: SIZE_M,
                         ..default()
                     },
-                    TextColor(Color::srgb(0.9, 0.9, 0.9)),
+                    TextColor::WHITE,
                 ));
         });
 }

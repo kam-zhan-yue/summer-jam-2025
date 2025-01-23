@@ -1,8 +1,6 @@
 use bevy::{color::palettes::basic::*, prelude::*};
 
-pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+use crate::config::{HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON};
 
 // Generic system that takes a component as a parameter, and will despawn all entities with that component
 pub fn despawn<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {

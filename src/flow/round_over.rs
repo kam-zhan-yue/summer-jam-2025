@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    config::NORMAL_BUTTON,
     globals::UiAssets,
-    helper::{despawn, handle_buttons, NORMAL_BUTTON},
+    helper::{despawn, handle_buttons},
     schedule::GameSet,
     state::GameState,
 };

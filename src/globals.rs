@@ -16,6 +16,7 @@ impl Plugin for GlobalPlugin {
 
 #[derive(Resource, Debug, Default)]
 pub struct UiAssets {
+    pub logo: Handle<Image>,
     pub heart_broken: Handle<Image>,
     pub heart_full: Handle<Image>,
     pub empty: Handle<Image>,
@@ -78,6 +79,7 @@ impl Plugin for UiAssetsPlugin {
 }
 
 fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
+    ui_assets.logo = asset_server.load("ui/game_logo.png");
     ui_assets.empty = asset_server.load("ui/empty.png");
     ui_assets.unknown = asset_server.load("ui/unknown.png");
     ui_assets.heart_broken = asset_server.load("ui/heart_broken.png");

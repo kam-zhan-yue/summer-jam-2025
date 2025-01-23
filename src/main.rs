@@ -29,7 +29,7 @@ use ui::UIPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(GlobalPlugin)
         .add_plugins(EventsPlugin)
         .add_plugins(FlowPlugin)
