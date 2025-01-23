@@ -10,6 +10,7 @@ use crate::{
         ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL,
         TRANSPARENT,
     },
+    events::SelectElementEvent,
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
@@ -151,15 +152,21 @@ fn handle_input(
     current_ui_flow: Res<State<UiState>>,
     input: Res<ButtonInput<KeyCode>>,
     mut game_data: ResMut<GameData>,
+    mut writer: EventWriter<SelectElementEvent>,
 ) {
     if *current_ui_flow.get() != UiState::Countdown {
         return;
     }
-    process_input(&mut game_data.player_one, &input);
-    process_input(&mut game_data.player_two, &input);
+    process_input(&mut game_data.player_one, &input, Player::One, &mut writer);
+    process_input(&mut game_data.player_two, &input, Player::Two, &mut writer);
 }
 
-fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>) {
+fn process_input(
+    player_data: &mut PlayerData,
+    input: &Res<ButtonInput<KeyCode>>,
+    player: Player,
+    writer: &mut EventWriter<SelectElementEvent>,
+) {
     // Get the selected choice
     let mut selected_choice = None;
     for (key, choice) in &player_data.input.map {
@@ -170,9 +177,7 @@ fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>
     }
 
     if let Some(choice) = selected_choice {
-        if player_data.choice_selection.element != choice.element {
-            player_data.choice_selection.element = choice.element;
-        }
+        player_data.select_element(player, choice.element, writer);
     }
 }
 

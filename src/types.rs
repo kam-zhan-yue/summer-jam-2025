@@ -2,7 +2,7 @@ use rand::Rng;
 use std::cmp::Ordering;
 use std::fmt;
 
-#[derive(Debug, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub enum Player {
     #[default]
     One,

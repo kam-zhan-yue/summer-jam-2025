@@ -12,6 +12,7 @@ use crate::{
         ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, LOSS_COLOUR, REVEAL_TIME,
         SIZE_XXL, TRANSPARENT, WON_COLOUR,
     },
+    events::SelectActionEvent,
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -114,7 +115,7 @@ fn on_enter(
         ))
         .with_child((
             SelectActionTitle,
-            Text::new("SELECT ACTION"),
+            Text::new("FIGHT!"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
                 font_size: SIZE_XXL,
@@ -163,15 +164,21 @@ fn handle_input(
     current_ui_flow: Res<State<UiState>>,
     input: Res<ButtonInput<KeyCode>>,
     mut game_data: ResMut<GameData>,
+    mut writer: EventWriter<SelectActionEvent>,
 ) {
     if *current_ui_flow.get() != UiState::Countdown {
         return;
     }
-    process_input(&mut game_data.player_one, &input);
-    process_input(&mut game_data.player_two, &input);
+    process_input(&mut game_data.player_one, &input, Player::One, &mut writer);
+    process_input(&mut game_data.player_two, &input, Player::Two, &mut writer);
 }
 
-fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>) {
+fn process_input(
+    player_data: &mut PlayerData,
+    input: &Res<ButtonInput<KeyCode>>,
+    player: Player,
+    writer: &mut EventWriter<SelectActionEvent>,
+) {
     // Get the selected choice
     let mut selected_choice = None;
     for (key, choice) in &player_data.input.map {
@@ -182,9 +189,7 @@ fn process_input(player_data: &mut PlayerData, input: &Res<ButtonInput<KeyCode>>
     }
 
     if let Some(choice) = selected_choice {
-        if player_data.choice_selection.action != choice.action {
-            player_data.choice_selection.action = choice.action;
-        }
+        player_data.select_action(player, choice.action, writer);
     }
 }
 

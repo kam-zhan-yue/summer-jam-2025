@@ -1,4 +1,5 @@
 use crate::config::MAX_HEALTH;
+use crate::events::{SelectActionEvent, SelectElementEvent};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
@@ -42,6 +43,31 @@ pub struct PlayerData {
     pub choice_selection: ChoiceSelection,
     pub health: i32,
     pub input: PlayerInput,
+}
+
+impl PlayerData {
+    pub fn select_element(
+        &mut self,
+        player: Player,
+        choice: Choice,
+        writer: &mut EventWriter<SelectElementEvent>,
+    ) {
+        if self.choice_selection.element != choice {
+            self.choice_selection.element = choice;
+            writer.send(SelectElementEvent::new(player, choice));
+        }
+    }
+    pub fn select_action(
+        &mut self,
+        player: Player,
+        choice: Choice,
+        writer: &mut EventWriter<SelectActionEvent>,
+    ) {
+        if self.choice_selection.action != choice {
+            self.choice_selection.action = choice;
+            writer.send(SelectActionEvent::new(player, choice));
+        }
+    }
 }
 
 impl Default for PlayerData {
