@@ -9,6 +9,8 @@ use crate::state::GameState;
 
 use crate::globals::UiAssets;
 
+use super::EffectsPopup;
+
 #[derive(Component, Debug)]
 struct PlayerOneHealth;
 
@@ -21,36 +23,31 @@ struct HealthPopupItem;
 #[derive(Component, Debug)]
 struct HealthPopup;
 
-#[derive(Component, Debug)]
-struct EffectsPopup;
+pub struct HealthPopupPlugin;
 
-pub struct EffectsPlugin;
-
-impl Plugin for EffectsPlugin {
+impl Plugin for HealthPopupPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::GameStart), setup);
         app.add_systems(Update, apply_effects.in_set(GameSet::Ui));
         app.add_systems(
             OnEnter(GameState::GameOver),
-            (despawn::<EffectsPopup>, despawn::<HealthPopup>).in_set(GameSet::Ui),
+            despawn::<HealthPopup>.in_set(GameSet::Ui),
         );
     }
 }
 
-fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
-    commands.spawn((Name::new("EffectsPopup"), EffectsPopup));
+fn setup(
+    mut commands: Commands,
+    query: Query<Entity, With<EffectsPopup>>,
+    ui_assets: Res<UiAssets>,
+) {
+    let Ok(effects_popup) = query.get_single() else {
+        return;
+    };
+
     commands
-        .spawn((
-            Name::new("Health Popup"),
-            HealthPopup,
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::Center,
-                align_content: AlignContent::Center,
-                ..default()
-            },
-        ))
+        .entity(effects_popup)
+        .with_child((Name::new("Health Popup"), HealthPopup))
         .with_children(|parent| {
             spawn_health(
                 Name::new("Player One Health"),

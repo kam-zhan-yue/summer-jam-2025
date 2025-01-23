@@ -10,7 +10,7 @@ use crate::{
     camera::{SCREEN_X, SCREEN_Y},
     config::{
         ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP, ANIM_SCROLL_LEFT,
-        ANIM_SCROLL_RIGHT,
+        ANIM_SCROLL_RIGHT, DARK, TRANSPARENT,
     },
 };
 
@@ -62,8 +62,8 @@ pub fn fade_in() -> Tween<BackgroundColor> {
         EaseFunction::QuarticOut,
         Duration::from_millis(ANIM_FADE_IN),
         UiBackgroundColorLens {
-            start: Color::srgba(0.0, 0.0, 0.0, 0.0),
-            end: Color::srgba(0.0, 0.0, 0.0, 0.9),
+            start: TRANSPARENT,
+            end: DARK,
         },
     )
 }
@@ -73,8 +73,8 @@ pub fn fade_out() -> Tween<BackgroundColor> {
         EaseFunction::QuarticOut,
         Duration::from_millis(ANIM_FADE_OUT),
         UiBackgroundColorLens {
-            start: Color::srgba(0.0, 0.0, 0.0, 0.8),
-            end: Color::srgba(0.0, 0.0, 0.0, 0.0),
+            start: DARK,
+            end: TRANSPARENT,
         },
     )
 }

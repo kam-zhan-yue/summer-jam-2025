@@ -29,6 +29,7 @@ pub const ANIM_FADE_IN: u64 = 700;
 pub const ANIM_FADE_OUT: u64 = 1000;
 pub const ANIM_SCALE_UP: u64 = 1200;
 pub const ANIM_SCALE_DOWN: u64 = 100;
+pub const DARK: Color = Color::srgba(0.0, 0.0, 0.0, 0.95);
 pub const TRANSPARENT: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
 
 // ====== SELECT ACTION ======

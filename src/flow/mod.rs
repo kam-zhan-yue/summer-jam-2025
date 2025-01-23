@@ -23,10 +23,6 @@ pub struct Flow {
 }
 
 impl Flow {
-    fn reset(&mut self, timer: Timer) {
-        self.timer = timer;
-    }
-
     fn tick(&mut self, duration: Duration) {
         self.timer.tick(duration);
     }
