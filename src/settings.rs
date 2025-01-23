@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub enum GameMode {
     #[default]
     SinglePlayer,
@@ -9,7 +9,7 @@ pub enum GameMode {
 
 #[derive(Resource, Debug, Default)]
 pub struct GameSettings {
-    game_mode: GameMode,
+    pub game_mode: GameMode,
 }
 
 pub struct SettingsPlugin;

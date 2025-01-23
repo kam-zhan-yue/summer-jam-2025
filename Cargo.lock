@@ -3982,6 +3982,7 @@ dependencies = [
  "bevy_color",
  "bevy_dev_tools",
  "bevy_tweening",
+ "rand",
 ]
 
 [[package]]

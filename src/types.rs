@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::cmp::Ordering;
 use std::fmt;
 
@@ -34,6 +35,17 @@ pub enum Action {
     Hand,
 }
 
+impl Action {
+    pub fn random() -> Self {
+        let mut rng = rand::thread_rng();
+        match rng.gen_range(0..3) {
+            0 => Action::Toilet,
+            1 => Action::Underwear,
+            _ => Action::Hand,
+        }
+    }
+}
+
 impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -67,6 +79,17 @@ pub enum Element {
     Fire,
     Water,
     Grass,
+}
+
+impl Element {
+    pub fn random() -> Self {
+        let mut rng = rand::thread_rng();
+        match rng.gen_range(0..3) {
+            0 => Element::Fire,
+            1 => Element::Water,
+            _ => Element::Grass,
+        }
+    }
 }
 
 impl fmt::Display for Element {

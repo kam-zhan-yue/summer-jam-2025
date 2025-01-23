@@ -1,7 +1,7 @@
 use crate::config::MAX_HEALTH;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
-use crate::settings::GameSettings;
+use crate::settings::{GameMode, GameSettings};
 use crate::state::GameState;
 use crate::types::{Action, Choice, Element, Outcome, Player};
 use bevy::prelude::*;
@@ -224,7 +224,10 @@ fn setup_game(
     );
 
     game_data.player_one.input = PlayerInput::new(player_one_inputs);
-    game_data.player_two.input = PlayerInput::new(player_two_inputs);
+    // Only init controls for Two Player Mode
+    if settings.game_mode == GameMode::TwoPlayer {
+        game_data.player_two.input = PlayerInput::new(player_two_inputs);
+    }
 
     commands.spawn((
         Transform::from_xyz(-300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),

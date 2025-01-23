@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 mod camera;
 mod combo;
+mod computer;
 mod config;
 mod events;
 mod flow;
@@ -17,6 +18,7 @@ mod ui;
 use bevy_tweening::TweeningPlugin;
 use camera::CameraPlugin;
 use combo::ComboPlugin;
+use computer::ComputerPlugin;
 use events::EventsPlugin;
 use flow::FlowPlugin;
 use globals::GlobalPlugin;
@@ -38,6 +40,7 @@ fn main() {
         .add_plugins(SettingsPlugin)
         .add_plugins(UIPlugin)
         .add_plugins(TweeningPlugin)
+        .add_plugins(ComputerPlugin)
         // .add_plugins(WorldInspectorPlugin::new())
         .run();
 }

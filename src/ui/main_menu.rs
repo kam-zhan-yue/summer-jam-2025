@@ -1,5 +1,6 @@
 use crate::helper::{despawn, handle_buttons, NORMAL_BUTTON};
 use crate::schedule::GameSet;
+use crate::settings::{GameMode, GameSettings};
 use crate::state::GameState;
 use bevy::prelude::*;
 
@@ -130,25 +131,29 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn handle_single_player_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<SinglePlayerButton>)>,
     mut game_flow: ResMut<NextState<GameState>>,
+    mut settings: ResMut<GameSettings>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
-        game_flow.set(GameState::Title);
+        settings.game_mode = GameMode::SinglePlayer;
+        game_flow.set(GameState::GameStart)
     }
 }
 
 fn handle_two_player_button(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<TwoPlayerButton>)>,
     mut game_flow: ResMut<NextState<GameState>>,
+    mut settings: ResMut<GameSettings>,
 ) {
     let Ok(interaction) = interaction_query.get_single() else {
         return;
     };
 
     if *interaction == Interaction::Pressed {
+        settings.game_mode = GameMode::TwoPlayer;
         game_flow.set(GameState::GameStart);
     }
 }
