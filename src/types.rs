@@ -36,11 +36,28 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn random() -> Self {
+    pub fn weighted(element: &Choice) -> Self {
         let mut rng = rand::thread_rng();
-        match rng.gen_range(0..3) {
-            0 => Action::Toilet,
-            1 => Action::Underwear,
+        let roll = rng.gen_range(0..4);
+        match element {
+            Choice::Element(Element::Water) => match roll {
+                0 => Action::Toilet,
+                1 => Action::Toilet,
+                2 => Action::Underwear,
+                _ => Action::Hand,
+            },
+            Choice::Element(Element::Fire) => match roll {
+                0 => Action::Hand,
+                1 => Action::Hand,
+                2 => Action::Underwear,
+                _ => Action::Toilet,
+            },
+            Choice::Element(Element::Grass) => match roll {
+                0 => Action::Underwear,
+                1 => Action::Underwear,
+                2 => Action::Toilet,
+                _ => Action::Hand,
+            },
             _ => Action::Hand,
         }
     }
