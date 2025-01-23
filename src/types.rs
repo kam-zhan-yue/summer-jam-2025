@@ -17,6 +17,20 @@ pub enum Choice {
     Element(Element),
 }
 
+impl Choice {
+    pub fn get_complement(choice: &Choice) -> Self {
+        match *choice {
+            Choice::Action(Action::Hand) => Choice::Element(Element::Fire),
+            Choice::Action(Action::Toilet) => Choice::Element(Element::Water),
+            Choice::Action(Action::Underwear) => Choice::Element(Element::Grass),
+            Choice::Element(Element::Fire) => Choice::Action(Action::Hand),
+            Choice::Element(Element::Water) => Choice::Action(Action::Toilet),
+            Choice::Element(Element::Grass) => Choice::Action(Action::Underwear),
+            _ => Choice::None,
+        }
+    }
+}
+
 impl fmt::Display for Choice {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

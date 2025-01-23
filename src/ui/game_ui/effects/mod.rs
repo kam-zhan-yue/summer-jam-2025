@@ -6,9 +6,6 @@ mod health_popup;
 use element_popup::ElementPopupPlugin;
 use health_popup::HealthPopupPlugin;
 
-#[derive(Component, Debug)]
-struct EffectsPopup;
-
 pub struct EffectsPlugin;
 
 impl Plugin for EffectsPlugin {

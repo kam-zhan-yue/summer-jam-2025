@@ -10,7 +10,7 @@ use crate::schedule::GameSet;
 use crate::state::{GameState, UiState};
 
 use crate::globals::UiAssets;
-use crate::types::{Choice, Player};
+use crate::types::{Choice, Element, Player};
 
 #[derive(Component, Debug)]
 struct PlayerOneElement;
@@ -163,7 +163,7 @@ fn update_element(
             **text = " attacks do double damage!".to_string();
         }
         if let Ok(mut image) = image_query.get_mut(child) {
-            *image = ImageNode::new(ui_assets.get_icon(*element));
+            *image = ImageNode::new(ui_assets.get_icon(Choice::get_complement(element)));
         }
     }
 }

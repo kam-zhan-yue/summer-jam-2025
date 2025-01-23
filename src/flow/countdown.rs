@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    config::SIZE_XL,
+    config::{SIZE_XL, START_STATE},
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -44,7 +44,7 @@ pub struct CountdownPlugin;
 impl Plugin for CountdownPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Countdown>();
-        app.add_systems(OnEnter(GameState::GameStart), setup);
+        app.add_systems(OnEnter(START_STATE), setup);
 
         // Showing, Updating, and Hiding the CountdownPopup
         app.add_systems(

@@ -28,14 +28,6 @@ struct SelectElementPopup;
 #[derive(Component, Debug)]
 struct SelectElementTitle;
 
-#[derive(Component, Debug)]
-struct RevealElementPopup;
-#[derive(Component, Debug)]
-struct PlayerOneElement;
-
-#[derive(Component, Debug)]
-struct PlayerTwoElement;
-
 pub struct SelectElementPlugin;
 
 impl Plugin for SelectElementPlugin {
@@ -58,17 +50,10 @@ impl Plugin for SelectElementPlugin {
                 .run_if(in_state(GameState::SelectElement)),
         );
 
-        app.add_systems(
-            OnEnter(UiState::Reveal),
-            reveal
-                .in_set(GameSet::Ui)
-                .run_if(in_state(GameState::SelectElement)),
-        );
-
         // Depsawn after exiting SelectElement
         app.add_systems(
             OnExit(GameState::SelectElement),
-            (despawn::<RevealElementPopup>, despawn::<SelectElementPopup>).in_set(GameSet::Ui),
+            despawn::<SelectElementPopup>.in_set(GameSet::Ui),
         );
     }
 }
@@ -139,10 +124,8 @@ fn handle_countdown(
             // Go to the reveal after the countdown
             UiState::Countdown => {
                 countdown.reset(Timer::from_seconds(REVEAL_TIME, TimerMode::Once));
-                next_ui_flow.set(UiState::Reveal);
+                next_game_flow.set(GameState::SelectAction);
             }
-            // Go to the next stage after the reveal
-            UiState::Reveal => next_game_flow.set(GameState::SelectAction),
             _ => (),
         }
     }
@@ -179,68 +162,4 @@ fn process_input(
     if let Some(choice) = selected_choice {
         player_data.select_element(player, choice.element, writer);
     }
-}
-
-fn reveal(mut commands: Commands, game_data: Res<GameData>, ui_assets: Res<UiAssets>) {
-    commands
-        .spawn((
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                row_gap: Val::Px(50.0),
-                flex_direction: FlexDirection::Row,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                ..default()
-            },
-            RevealElementPopup,
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn((
-                    PlayerOneElement,
-                    Node {
-                        width: Val::Px(200.0),
-                        height: Val::Px(200.0),
-                        border: UiRect::all(Val::Px(10.0)),
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::MAX,
-                    BackgroundColor(Color::WHITE),
-                ))
-                .with_child((
-                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::One))),
-                    Node {
-                        width: Val::Px(75.0),
-                        height: Val::Px(75.0),
-                        ..default()
-                    },
-                ));
-            parent
-                .spawn((
-                    PlayerTwoElement,
-                    Node {
-                        width: Val::Px(200.0),
-                        height: Val::Px(200.0),
-                        border: UiRect::all(Val::Px(10.0)),
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::MAX,
-                    BackgroundColor(Color::WHITE),
-                ))
-                .with_child((
-                    ImageNode::new(ui_assets.get_icon(game_data.get_element(Player::Two))),
-                    Node {
-                        width: Val::Px(75.0),
-                        height: Val::Px(75.0),
-                        ..default()
-                    },
-                ));
-        });
 }

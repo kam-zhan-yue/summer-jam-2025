@@ -1,4 +1,4 @@
-use crate::config::{MAX_HEALTH, START_STATE};
+use crate::config::{FADED_PLAYER, MAX_HEALTH, START_STATE};
 use crate::events::{SelectActionEvent, SelectElementEvent};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
@@ -18,12 +18,7 @@ pub struct ChoiceSelection {
 
 impl ChoiceSelection {
     pub fn can_double(self) -> bool {
-        match (self.element, self.action) {
-            (Choice::Element(Element::Fire), Choice::Action(Action::Hand)) => true,
-            (Choice::Element(Element::Water), Choice::Action(Action::Toilet)) => true,
-            (Choice::Element(Element::Grass), Choice::Action(Action::Underwear)) => true,
-            _ => false,
-        }
+        self.element == Choice::get_complement(&self.action)
     }
 }
 
@@ -89,13 +84,6 @@ pub struct GameData {
 }
 
 impl GameData {
-    pub fn get_element(&self, player: Player) -> Choice {
-        match player {
-            Player::One => self.player_one.choice_selection.element,
-            Player::Two => self.player_two.choice_selection.element,
-        }
-    }
-
     pub fn get_action(&self, player: Player) -> Choice {
         match player {
             Player::One => self.player_one.choice_selection.action,
@@ -190,6 +178,11 @@ impl Plugin for ComboPlugin {
         app.init_resource::<GameData>();
         app.add_systems(OnEnter(START_STATE), setup_game);
         app.add_systems(
+            OnEnter(GameState::SelectAction),
+            on_enter_select_action.in_set(GameSet::Flow),
+        );
+        app.add_systems(Update, select_action.in_set(GameSet::Flow));
+        app.add_systems(
             OnExit(GameState::GameOver),
             (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),
         );
@@ -266,4 +259,25 @@ fn setup_game(
         PlayerTwo,
         Sprite::from_image(asset_server.load("sprites/stick_right.png")),
     ));
+}
+
+fn on_enter_select_action(
+    mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
+    mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
+) {
+    if let Ok(mut player_one) = player_one_query.get_single_mut() {
+        player_one.color = FADED_PLAYER;
+    }
+
+    if let Ok(mut player_two) = player_two_query.get_single_mut() {
+        player_two.color = FADED_PLAYER;
+    }
+}
+
+fn select_action(
+    mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
+    mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut reader: EventReader<SelectActionEvent>,
+) {
+    for event in reader.read() {}
 }

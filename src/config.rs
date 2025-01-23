@@ -3,7 +3,7 @@ use bevy_color::Color;
 
 use crate::state::GameState;
 
-pub const START_STATE: GameState = GameState::SelectElement;
+pub const START_STATE: GameState = GameState::SelectAction;
 
 // Max Health of the player
 pub const MAX_HEALTH: i32 = 5;
@@ -37,6 +37,7 @@ pub const DARK: Color = Color::srgba(0.0, 0.0, 0.0, 0.95);
 pub const TRANSPARENT: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
 
 // ====== SELECT ACTION ======
+pub const FADED_PLAYER: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
 pub const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
 pub const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
