@@ -45,6 +45,7 @@ pub struct FlowPlugin;
 impl Plugin for FlowPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Flow>();
+        app.add_systems(Startup, startup);
         app.add_plugins(RoundStartPlugin);
         app.add_plugins(SelectElementPlugin);
         app.add_plugins(SelectActionPlugin);
@@ -53,6 +54,10 @@ impl Plugin for FlowPlugin {
         app.add_plugins(CountdownPlugin);
         app.add_systems(Update, handle_flow.in_set(GameSet::Flow));
     }
+}
+
+fn startup(mut game_state: ResMut<NextState<GameState>>) {
+    game_state.set(GameState::Title);
 }
 
 fn handle_flow(

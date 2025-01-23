@@ -101,7 +101,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             SelectActionTitle,
             Text::new("SELECT ACTION"),
             TextFont {
-                font: ui_assets.fira_sans_bold.clone(),
+                font: ui_assets.ms_pain.clone(),
                 font_size: 72.0,
                 ..default()
             },

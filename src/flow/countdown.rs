@@ -86,7 +86,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             CountdownText,
             Text::new("3.0"),
             TextFont {
-                font: ui_assets.fira_sans_bold.clone(),
+                font: ui_assets.ms_pain.clone(),
                 font_size: 30.0,
                 ..default()
             },

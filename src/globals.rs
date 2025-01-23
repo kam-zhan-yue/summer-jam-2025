@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     combo::ResolveResult,
+    schedule::GameSet,
     types::{Action, Choice, Element, Outcome},
 };
 
@@ -33,6 +34,7 @@ pub struct UiAssets {
     pub result_wedgie_p2: Handle<Image>,
     pub result_draw: Handle<Image>,
     pub fira_sans_bold: Handle<Font>,
+    pub ms_pain: Handle<Font>,
 }
 
 impl UiAssets {
@@ -71,7 +73,7 @@ pub struct UiAssetsPlugin;
 impl Plugin for UiAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<UiAssets>();
-        app.add_systems(Startup, setup);
+        app.add_systems(PreStartup, setup.in_set(GameSet::Flow));
     }
 }
 
@@ -87,6 +89,7 @@ fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
     ui_assets.tool_hand = asset_server.load("ui/tool_hand.png");
     ui_assets.tool_underwear = asset_server.load("ui/tool_underwear.png");
     ui_assets.fira_sans_bold = asset_server.load("fonts/FiraSans-Bold.ttf");
+    ui_assets.ms_pain = asset_server.load("fonts/MS_PAIN.ttf");
     ui_assets.result_swirly_p1 = asset_server.load("ui/result_swirly_p1.png");
     ui_assets.result_swirly_p2 = asset_server.load("ui/result_swirly_p2.png");
     ui_assets.result_wedgie_p1 = asset_server.load("ui/result_wedgie_p1.png");

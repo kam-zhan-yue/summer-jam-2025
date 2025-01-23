@@ -208,7 +208,7 @@ fn back_to_element(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
             Text::new("No Advantage. Restarting Round."),
             TextFont {
                 font_size: 32.0,
-                font: ui_assets.fira_sans_bold.clone(),
+                font: ui_assets.ms_pain.clone(),
                 ..default()
             },
             TextColor(Color::BLACK),
@@ -256,7 +256,7 @@ fn combo_breaker(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
             Text::new("COMBO BREAKER!\nRestarting Round."),
             TextFont {
                 font_size: 32.0,
-                font: ui_assets.fira_sans_bold.clone(),
+                font: ui_assets.ms_pain.clone(),
                 ..default()
             },
             TextColor(Color::BLACK),
@@ -311,7 +311,7 @@ fn advantage(
             Text::new(text),
             TextFont {
                 font_size: 32.0,
-                font: ui_assets.fira_sans_bold.clone(),
+                font: ui_assets.ms_pain.clone(),
                 ..default()
             },
             TextColor(Color::BLACK),

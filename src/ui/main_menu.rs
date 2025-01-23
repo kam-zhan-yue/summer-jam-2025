@@ -1,3 +1,4 @@
+use crate::globals::UiAssets;
 use crate::helper::{despawn, handle_buttons, NORMAL_BUTTON};
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
@@ -17,7 +18,10 @@ pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Title), spawn_main_menu);
+        app.add_systems(
+            OnEnter(GameState::Title),
+            spawn_main_menu.in_set(GameSet::Ui),
+        );
         app.add_systems(
             Update,
             (
@@ -32,7 +36,7 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
     // Spawn the Root Node
     commands
         .spawn((
@@ -61,7 +65,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent.spawn((
                         Text::new("Swirlie, Wedgie, Whirlie!"),
                         TextFont {
-                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font: ui_assets.ms_pain.clone(),
                             font_size: 50.0,
                             ..default()
                         },
@@ -91,7 +95,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_child((
                     Text::new("1 Player"),
                     TextFont {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font: ui_assets.ms_pain.clone(),
                         font_size: 22.0,
                         ..default()
                     },
@@ -119,7 +123,7 @@ pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_child((
                     Text::new("2 Players"),
                     TextFont {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font: ui_assets.ms_pain.clone(),
                         font_size: 22.0,
                         ..default()
                     },

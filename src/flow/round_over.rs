@@ -57,7 +57,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     parent.spawn((
                         Text::new("Game Over!"),
                         TextFont {
-                            font: ui_assets.fira_sans_bold.clone(),
+                            font: ui_assets.ms_pain.clone(),
                             font_size: 50.0,
                             ..default()
                         },
@@ -87,7 +87,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 .with_child((
                     Text::new("Back to Title"),
                     TextFont {
-                        font: ui_assets.fira_sans_bold.clone(),
+                        font: ui_assets.ms_pain.clone(),
                         font_size: 22.0,
                         ..default()
                     },
