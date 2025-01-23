@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::combo::GameData;
-use crate::config::{SIZE_M, START_STATE};
+use crate::config::{SIZE_M, SIZE_S, START_STATE};
 use crate::events::SelectElementEvent;
 use crate::helper::{despawn, hide, show};
 use crate::schedule::GameSet;
@@ -41,11 +41,10 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                bottom: Val::Px(10.0),
-                align_items: AlignItems::FlexEnd,
+                padding: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(75.0), Val::Px(10.0)),
+                align_items: AlignItems::FlexStart,
                 ..default()
             },
-            Visibility::Hidden,
         ))
         .with_children(|parent| {
             spawn_element_popup(
@@ -53,7 +52,6 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 parent,
                 PlayerOneElement,
                 JustifyContent::Start,
-                FlexDirection::Row,
                 &ui_assets,
             );
             spawn_element_popup(
@@ -61,7 +59,6 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 parent,
                 PlayerOneElement,
                 JustifyContent::End,
-                FlexDirection::RowReverse,
                 &ui_assets,
             );
         });
@@ -72,7 +69,6 @@ fn spawn_element_popup(
     parent: &mut ChildBuilder,
     player: impl Component,
     justify_content: JustifyContent,
-    flex_direction: FlexDirection,
     ui_assets: &Res<UiAssets>,
 ) {
     parent
@@ -82,16 +78,25 @@ fn spawn_element_popup(
             Node {
                 width: Val::Percent(50.0),
                 justify_content,
-                flex_direction,
+                align_items: AlignItems::Center,
                 ..default()
             },
+            Visibility::Hidden,
         ))
         .with_children(|parent| {
             parent.spawn((
-                Text::new("Example Text"),
+                ImageNode::new(ui_assets.element_fire.clone()),
+                Node {
+                    width: Val::Px(50.0),
+                    height: Val::Px(50.0),
+                    ..default()
+                },
+            ));
+            parent.spawn((
+                Text::new(" attacks do double damage!"),
                 TextFont {
                     font: ui_assets.ms_pain.clone(),
-                    font_size: SIZE_M,
+                    font_size: SIZE_S,
                     ..default()
                 },
                 TextColor::BLACK,
