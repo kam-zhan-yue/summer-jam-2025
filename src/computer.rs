@@ -38,17 +38,29 @@ fn setup(mut commands: Commands, settings: Res<GameSettings>) {
     }
 }
 
-fn select_element(mut game_data: ResMut<GameData>, mut writer: EventWriter<SelectElementEvent>) {
-    let random_element = Choice::Element(Element::random());
-    game_data
-        .player_two
-        .select_element(Player::Two, random_element, &mut writer);
+fn select_element(
+    mut game_data: ResMut<GameData>,
+    mut writer: EventWriter<SelectElementEvent>,
+    settings: Res<GameSettings>,
+) {
+    if settings.game_mode == GameMode::SinglePlayer {
+        let random_element = Choice::Element(Element::random());
+        game_data
+            .player_two
+            .select_element(Player::Two, random_element, &mut writer);
+    }
 }
 
-fn select_action(mut game_data: ResMut<GameData>, mut writer: EventWriter<SelectActionEvent>) {
-    let element = game_data.player_two.choice_selection.element;
-    let random_action = Choice::Action(Action::weighted(&element));
-    game_data
-        .player_two
-        .select_action(Player::Two, random_action, &mut writer);
+fn select_action(
+    mut game_data: ResMut<GameData>,
+    mut writer: EventWriter<SelectActionEvent>,
+    settings: Res<GameSettings>,
+) {
+    if settings.game_mode == GameMode::SinglePlayer {
+        let element = game_data.player_two.choice_selection.element;
+        let random_action = Choice::Action(Action::weighted(&element));
+        game_data
+            .player_two
+            .select_action(Player::Two, random_action, &mut writer);
+    }
 }

@@ -2,39 +2,56 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_tweening::{
-    lens::{TransformPositionLens, TransformScaleLens, UiBackgroundColorLens, UiPositionLens},
+    lens::{
+        SpriteColorLens, TransformPositionLens, TransformScaleLens, UiBackgroundColorLens,
+        UiPositionLens,
+    },
     Sequence, Tween,
 };
 
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
-    config::{
-        ANIM_FADE_COLOUR, ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP,
-        ANIM_SCROLL_LEFT, ANIM_SCROLL_RIGHT, ANIM_SHAKE, DARK, LOSS_COLOUR, SHAKE_X, TRANSPARENT,
-        WON_COLOUR,
-    },
+    config::*,
 };
 
-pub fn won_tween() -> Tween<BackgroundColor> {
-    Tween::new(
-        EaseFunction::QuarticIn,
-        Duration::from_secs(ANIM_FADE_COLOUR),
+pub fn won_sequence() -> Sequence<BackgroundColor> {
+    let fade_in = Tween::new(
+        EaseFunction::QuarticInOut,
+        Duration::from_millis(ANIM_FADE_IN_COLOUR),
         UiBackgroundColorLens {
-            start: TRANSPARENT,
-            end: WON_COLOUR,
+            start: Color::WHITE,
+            end: WON_COLOUR_SOLID,
         },
-    )
+    );
+    let fade_out = Tween::new(
+        EaseFunction::QuarticOut,
+        Duration::from_millis(ANIM_FADE_OUT_COLOUR),
+        UiBackgroundColorLens {
+            start: WON_COLOUR_SOLID,
+            end: WON_COLOUR_TRANSPARENT,
+        },
+    );
+    fade_in.then(fade_out)
 }
 
-pub fn loss_tween() -> Tween<BackgroundColor> {
-    Tween::new(
-        EaseFunction::QuarticIn,
-        Duration::from_secs(ANIM_FADE_COLOUR),
+pub fn loss_sequence() -> Sequence<BackgroundColor> {
+    let fade_in = Tween::new(
+        EaseFunction::QuarticInOut,
+        Duration::from_millis(ANIM_FADE_IN_COLOUR),
         UiBackgroundColorLens {
-            start: TRANSPARENT,
-            end: LOSS_COLOUR,
+            start: Color::WHITE,
+            end: LOSS_COLOUR_SOLID,
         },
-    )
+    );
+    let fade_out = Tween::new(
+        EaseFunction::QuarticOut,
+        Duration::from_millis(ANIM_FADE_OUT_COLOUR),
+        UiBackgroundColorLens {
+            start: LOSS_COLOUR_SOLID,
+            end: LOSS_COLOUR_TRANSPARENT,
+        },
+    );
+    fade_in.then(fade_out)
 }
 
 const OFFSET: f32 = 500.;

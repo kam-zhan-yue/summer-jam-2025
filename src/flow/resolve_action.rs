@@ -1,18 +1,22 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{lens::TransformScaleLens, Animator, Delay, Tween, TweenCompleted};
+use bevy_tweening::{lens::TransformScaleLens, Animator, Delay, Sequence, Tween, TweenCompleted};
 
 const RESOLVE_COMPLETE_ID: u64 = 1;
 const BACK_TO_ELEMENT: u64 = 2;
 const LOOP: u64 = 3;
 const COMBO_BREAKER: u64 = 4;
+const REMOVE_CHOICES: u64 = 900;
 
 use crate::{
-    animations::{fade_in, fade_out, move_in_tween, move_out_tween},
+    animations::{fade_in, fade_out, loss_sequence, move_in_tween, move_out_tween, won_sequence},
     camera::{SCREEN_X, SCREEN_Y},
     combo::{GameData, ResolveResult},
-    config::{ANIM_FADE_IN, ANIM_SCROLL_LEFT, ANIM_SCROLL_RIGHT, SIZE_M, TRANSPARENT},
+    config::{
+        ANIM_FADE_IN, ANIM_FADE_IN_COLOUR, ANIM_FADE_OUT_COLOUR, ANIM_SCROLL_LEFT,
+        ANIM_SCROLL_RIGHT, ANIM_STAY, SIZE_M, TRANSPARENT,
+    },
     events::ApplyEffectsEvent,
     globals::UiAssets,
     helper::despawn,
@@ -27,7 +31,13 @@ struct TransitionTitle;
 pub struct ResolveActionPlugin;
 
 #[derive(Component, Debug)]
+pub struct RevealActionPopup;
+
+#[derive(Component, Debug)]
 pub struct ResolveActionPopup;
+
+#[derive(Component, Debug)]
+struct ActionPopupItem;
 
 impl Plugin for ResolveActionPlugin {
     fn build(&self, app: &mut App) {
@@ -56,45 +66,133 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
 
     let background_animation = fade_in().then(
         Delay::new(Duration::from_millis(
-            ANIM_SCROLL_LEFT + ANIM_SCROLL_RIGHT - ANIM_FADE_IN,
+            ANIM_FADE_IN_COLOUR
+                + ANIM_FADE_OUT_COLOUR
+                + ANIM_SCROLL_LEFT
+                + ANIM_STAY
+                + ANIM_SCROLL_RIGHT
+                - ANIM_FADE_IN,
         ))
         .then(fade_out().with_completed_event(RESOLVE_COMPLETE_ID)),
     );
 
+    // Choice Reveal Animation
+    let player_one_sequence = match result.outcome {
+        Outcome::PlayerOne => won_sequence(),
+        _ => loss_sequence(),
+    };
+
+    let player_two_sequence = match result.outcome {
+        Outcome::PlayerTwo => won_sequence(),
+        _ => loss_sequence(),
+    };
+
+    // Graphic Animation
     let move_in_tween = move_in_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
 
     let move_out_tween = move_out_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
 
-    let sequence = move_in_tween.then(move_out_tween.with_completed_event(RESOLVE_COMPLETE_ID));
+    let sequence = Delay::new(Duration::from_millis(ANIM_FADE_IN_COLOUR))
+        .with_completed_event(REMOVE_CHOICES)
+        .then(
+            move_in_tween.then(
+                Delay::new(Duration::from_millis(ANIM_STAY))
+                    .then(move_out_tween.with_completed_event(RESOLVE_COMPLETE_ID)),
+            ),
+        );
 
-    // Image
     commands
         .spawn((
             ResolveActionPopup,
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Row,
                 align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
                 ..default()
             },
             BackgroundColor(TRANSPARENT),
             Animator::new(background_animation),
         ))
-        .with_child((
+        .with_children(|parent| {
+            // Graphic Node
+            parent.spawn((
+                Node {
+                    width: Val::Px(800.0),
+                    height: Val::Px(400.0),
+                    left: Val::Px(-SCREEN_X),
+                    top: Val::Px(SCREEN_Y / 2.),
+                    right: Val::Auto,
+                    bottom: Val::Auto,
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                ImageNode::new(ui_assets.get_result(result)),
+                Animator::new(sequence),
+            ));
+            // Player One Node
+            spawn_image_node(
+                parent,
+                player_one_sequence,
+                ui_assets.get_icon(game_data.get_action(Player::One)),
+                UiRect::right(Val::Px(10.0)),
+                JustifyContent::End,
+            );
+            // Player Two Node
+            spawn_image_node(
+                parent,
+                player_two_sequence,
+                ui_assets.get_icon(game_data.get_action(Player::Two)),
+                UiRect::left(Val::Px(10.0)),
+                JustifyContent::Start,
+            );
+        });
+}
+
+fn spawn_image_node(
+    parent: &mut ChildBuilder,
+    sequence: Sequence<BackgroundColor>,
+    image: Handle<Image>,
+    padding: UiRect,
+    justify_content: JustifyContent,
+) {
+    parent
+        .spawn((
+            ActionPopupItem,
             Node {
-                width: Val::Px(800.0),
-                height: Val::Px(400.0),
-                left: Val::Px(-SCREEN_X),
-                top: Val::Px(SCREEN_Y / 2.),
-                right: Val::Auto,
-                bottom: Val::Auto,
-                position_type: PositionType::Absolute,
+                width: Val::Percent(50.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content,
+                padding,
                 ..default()
             },
-            ImageNode::new(ui_assets.get_result(result)),
-            Animator::new(sequence),
-        ));
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    Node {
+                        width: Val::Px(200.0),
+                        height: Val::Px(200.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    BorderColor(Color::BLACK),
+                    BorderRadius::MAX,
+                    BackgroundColor(Color::WHITE),
+                    Animator::new(sequence),
+                ))
+                .with_child((
+                    ImageNode::new(image),
+                    Node {
+                        width: Val::Px(75.0),
+                        height: Val::Px(75.0),
+                        ..default()
+                    },
+                ));
+        });
 }
 
 fn update_next_flow(
@@ -103,10 +201,16 @@ fn update_next_flow(
     mut writer: EventWriter<ApplyEffectsEvent>,
     mut game_data: ResMut<GameData>,
     mut game_flow: ResMut<NextState<GameState>>,
+    popup_item_query: Query<Entity, With<ActionPopupItem>>,
     ui_assets: Res<UiAssets>,
 ) {
     for event in reader.read() {
         match event.user_data {
+            REMOVE_CHOICES => {
+                for item in &popup_item_query {
+                    commands.entity(item).despawn_recursive();
+                }
+            }
             RESOLVE_COMPLETE_ID => {
                 let result = game_data.get_action_result();
                 game_data.process_turn();

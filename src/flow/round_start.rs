@@ -64,7 +64,7 @@ fn on_enter(
         ))
         .with_children(|parent| {
             parent.spawn((
-                Text::new("GAME"),
+                Text::new("SWIRLY"),
                 TextFont {
                     font: ui_assets.ms_pain.clone(),
                     font_size: SIZE_XXL,
@@ -78,7 +78,7 @@ fn on_enter(
                 Animator::new(first_animation),
             ));
             parent.spawn((
-                Text::new("START"),
+                Text::new("WHIRLY"),
                 TextFont {
                     font: ui_assets.ms_pain.clone(),
                     font_size: SIZE_XXL,
