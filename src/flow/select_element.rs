@@ -7,7 +7,7 @@ use crate::{
     animations::{fade_in, fade_out, scale_down, scale_up},
     combo::{GameData, PlayerData},
     config::{
-        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL,
+        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL,
         TRANSPARENT,
     },
     globals::UiAssets,
@@ -132,6 +132,7 @@ fn handle_countdown(
             next_ui_flow.set(UiState::Countdown)
         }
     }
+
     if countdown.timer.just_finished() {
         match current_ui_flow.get() {
             // Go to the reveal after the countdown

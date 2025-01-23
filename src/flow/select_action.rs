@@ -1,13 +1,17 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{lens::UiBackgroundColorLens, Animator, Tween};
+use bevy_tweening::{lens::UiBackgroundColorLens, Animator, Delay, Tween, TweenCompleted};
 
 pub const COUNTDOWN_STATE: u64 = 800;
 
 use crate::{
+    animations::{fade_in, fade_out, scale_down, scale_up},
     combo::{GameData, PlayerData},
-    config::{COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL, TITLE_TIME},
+    config::{
+        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, LOSS_COLOUR, REVEAL_TIME,
+        SIZE_XXL, TRANSPARENT, WON_COLOUR,
+    },
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -36,8 +40,6 @@ pub struct SelectActionPlugin;
 
 impl Plugin for SelectActionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
-
         app.add_systems(
             OnEnter(GameState::SelectAction),
             on_enter.in_set(GameSet::Ui),
@@ -83,7 +85,20 @@ impl Plugin for SelectActionPlugin {
     }
 }
 
-fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
+fn on_enter(
+    mut commands: Commands,
+    ui_assets: Res<UiAssets>,
+    mut next_ui: ResMut<NextState<UiState>>,
+) {
+    next_ui.set(UiState::Title);
+
+    let background_animation = fade_in().then(
+        Delay::new(Duration::from_millis(
+            ANIM_SCALE_UP + ANIM_SCALE_DOWN - ANIM_FADE_IN,
+        ))
+        .then(fade_out().with_completed_event(COUNTDOWN_STATE)),
+    );
+    let title_animation = scale_up().then(scale_down());
     commands
         .spawn((
             Node {
@@ -93,8 +108,9 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 justify_content: JustifyContent::Center,
                 ..default()
             },
+            BackgroundColor(TRANSPARENT),
+            Animator::new(background_animation),
             SelectActionPopup,
-            Visibility::Hidden,
         ))
         .with_child((
             SelectActionTitle,
@@ -104,13 +120,13 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 font_size: SIZE_XXL,
                 ..default()
             },
-            TextColor(Color::BLACK),
+            Node {
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+            Animator::new(title_animation),
         ));
-}
-
-fn on_enter(mut countdown: ResMut<Countdown>, mut next_ui: ResMut<NextState<UiState>>) {
-    countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
-    next_ui.set(UiState::Title);
 }
 
 fn handle_countdown(
@@ -119,15 +135,18 @@ fn handle_countdown(
     mut next_ui_flow: ResMut<NextState<UiState>>,
     mut next_game_flow: ResMut<NextState<GameState>>,
     time: Res<Time>,
+    mut reader: EventReader<TweenCompleted>,
 ) {
     countdown.tick(time.delta());
+    for event in reader.read() {
+        if event.user_data == COUNTDOWN_STATE {
+            countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
+            next_ui_flow.set(UiState::Countdown)
+        }
+    }
+
     if countdown.timer.just_finished() {
         match current_ui_flow.get() {
-            // Go to the countdown after the title
-            UiState::Title => {
-                countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
-                next_ui_flow.set(UiState::Countdown)
-            }
             // Go to the reveal after the countdown
             UiState::Countdown => {
                 countdown.reset(Timer::from_seconds(REVEAL_TIME, TimerMode::Once));
@@ -135,6 +154,7 @@ fn handle_countdown(
             }
             // Go to the next stage after the reveal
             UiState::Reveal => next_game_flow.set(GameState::ResolveAction),
+            _ => (),
         }
     }
 }

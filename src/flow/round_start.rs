@@ -4,9 +4,7 @@ use bevy::prelude::*;
 use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::animations::{fade_in, fade_out, scale_down, scale_up};
-use crate::config::{
-    ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, SIZE_XXL, TRANSPARENT,
-};
+use crate::config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, SIZE_XXL, TRANSPARENT};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::{globals::UiAssets, state::GameState};
