@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    config::{SIZE_L, SIZE_XL, SIZE_XXL},
+    config::SIZE_XXL,
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,

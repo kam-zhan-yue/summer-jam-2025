@@ -12,6 +12,7 @@ const LOOP: u64 = 3;
 const COMBO_BREAKER: u64 = 4;
 
 use crate::{
+    animations::{move_in_tween, move_out_tween},
     camera::{SCREEN_X, SCREEN_Y},
     combo::{GameData, ResolveResult},
     config::SIZE_M,
@@ -44,56 +45,21 @@ impl Plugin for ResolveActionPlugin {
 
 const IMAGE_WIDTH: f32 = 800.;
 const IMAGE_HEIGHT: f32 = 400.;
-const OFFSET: f32 = 500.;
 
 fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<GameData>) {
     let result = game_data.get_action_result();
-    let move_in_tween = Tween::new(
-        EaseFunction::QuarticOut,
-        Duration::from_millis(1200),
-        UiPositionLens {
-            start: UiRect {
-                left: Val::Px(-SCREEN_X - OFFSET - IMAGE_WIDTH),
-                top: Val::Px(SCREEN_Y / 2. - IMAGE_HEIGHT / 2.),
-                right: Val::Auto,
-                bottom: Val::Auto,
-            },
-            end: UiRect {
-                left: Val::Px(SCREEN_X / 2. - IMAGE_WIDTH / 2.),
-                top: Val::Px(SCREEN_Y / 2. - IMAGE_HEIGHT / 2.),
-                right: Val::Auto,
-                bottom: Val::Auto,
-            },
-        },
-    );
+    let move_in_tween = move_in_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
 
-    let move_out_tween = Tween::new(
-        EaseFunction::QuarticIn,
-        Duration::from_millis(1200),
-        UiPositionLens {
-            start: UiRect {
-                left: Val::Px(SCREEN_X / 2. - IMAGE_WIDTH / 2.),
-                top: Val::Px(SCREEN_Y / 2. - IMAGE_HEIGHT / 2.),
-                right: Val::Auto,
-                bottom: Val::Auto,
-            },
-            end: UiRect {
-                left: Val::Px(SCREEN_X + OFFSET + IMAGE_WIDTH),
-                top: Val::Px(SCREEN_Y / 2. - IMAGE_HEIGHT / 2.),
-                right: Val::Auto,
-                bottom: Val::Auto,
-            },
-        },
-    )
-    .with_completed_event(RESOLVE_COMPLETE_ID);
+    let move_out_tween = move_out_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
 
-    let sequence = move_in_tween.then(move_out_tween);
+    let sequence = move_in_tween.then(move_out_tween.with_completed_event(RESOLVE_COMPLETE_ID));
 
+    // Image
     commands.spawn((
         Node {
             width: Val::Px(800.0),
             height: Val::Px(400.0),
-            left: Val::Px(-SCREEN_X - OFFSET),
+            left: Val::Px(-SCREEN_X),
             top: Val::Px(SCREEN_Y / 2.),
             right: Val::Auto,
             bottom: Val::Auto,

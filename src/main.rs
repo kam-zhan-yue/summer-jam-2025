@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
+mod animations;
 mod camera;
 mod combo;
 mod computer;
