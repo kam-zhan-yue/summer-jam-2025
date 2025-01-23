@@ -1,5 +1,5 @@
 use crate::config::{
-    BORDER_RADIUS, BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M,
+    BORDER_RADIUS, BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M, START_STATE,
 };
 use crate::globals::UiAssets;
 use crate::helper::{despawn, handle_buttons};
@@ -144,7 +144,7 @@ fn handle_single_player_button(
 
     if *interaction == Interaction::Pressed {
         settings.game_mode = GameMode::SinglePlayer;
-        game_flow.set(GameState::GameStart)
+        game_flow.set(START_STATE)
     }
 }
 
@@ -159,6 +159,6 @@ fn handle_two_player_button(
 
     if *interaction == Interaction::Pressed {
         settings.game_mode = GameMode::TwoPlayer;
-        game_flow.set(GameState::GameStart);
+        game_flow.set(START_STATE);
     }
 }

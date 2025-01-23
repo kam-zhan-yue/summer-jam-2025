@@ -1,4 +1,4 @@
-use crate::config::MAX_HEALTH;
+use crate::config::{MAX_HEALTH, START_STATE};
 use crate::events::{SelectActionEvent, SelectElementEvent};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
@@ -188,7 +188,7 @@ pub struct ComboPlugin;
 impl Plugin for ComboPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameData>();
-        app.add_systems(OnEnter(GameState::GameStart), setup_game);
+        app.add_systems(OnEnter(START_STATE), setup_game);
         app.add_systems(
             OnExit(GameState::GameOver),
             (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),

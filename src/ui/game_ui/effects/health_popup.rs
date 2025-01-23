@@ -1,15 +1,13 @@
 use bevy::prelude::*;
 
 use crate::combo::GameData;
-use crate::config::MAX_HEALTH;
+use crate::config::{MAX_HEALTH, START_STATE};
 use crate::events::ApplyEffectsEvent;
-use crate::helper::despawn;
+use crate::helper::{despawn, hide, show};
 use crate::schedule::GameSet;
-use crate::state::GameState;
+use crate::state::{GameState, UiState};
 
 use crate::globals::UiAssets;
-
-use super::EffectsPopup;
 
 #[derive(Component, Debug)]
 struct PlayerOneHealth;
@@ -27,27 +25,29 @@ pub struct HealthPopupPlugin;
 
 impl Plugin for HealthPopupPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::GameStart), setup);
+        app.add_systems(OnEnter(START_STATE), setup);
         app.add_systems(Update, apply_effects.in_set(GameSet::Ui));
         app.add_systems(
             OnEnter(GameState::GameOver),
             despawn::<HealthPopup>.in_set(GameSet::Ui),
         );
+        app.add_systems(OnEnter(GameState::Title), hide::<HealthPopup>);
+        app.add_systems(OnExit(UiState::Title), show::<HealthPopup>);
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    query: Query<Entity, With<EffectsPopup>>,
-    ui_assets: Res<UiAssets>,
-) {
-    let Ok(effects_popup) = query.get_single() else {
-        return;
-    };
-
+fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
     commands
-        .entity(effects_popup)
-        .with_child((Name::new("Health Popup"), HealthPopup))
+        .spawn((
+            Name::new("Health Popup"),
+            HealthPopup,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                ..default()
+            },
+            Visibility::Hidden,
+        ))
         .with_children(|parent| {
             spawn_health(
                 Name::new("Player One Health"),

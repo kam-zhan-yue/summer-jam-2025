@@ -16,6 +16,7 @@ pub enum GameState {
 #[derive(Debug, Default, States, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum UiState {
     #[default]
+    None,
     Title,
     Countdown,
     Reveal,

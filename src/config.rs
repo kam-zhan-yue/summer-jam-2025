@@ -1,6 +1,10 @@
 use bevy::ui::{UiRect, Val};
 use bevy_color::Color;
 
+use crate::state::GameState;
+
+pub const START_STATE: GameState = GameState::SelectElement;
+
 // Max Health of the player
 pub const MAX_HEALTH: i32 = 5;
 

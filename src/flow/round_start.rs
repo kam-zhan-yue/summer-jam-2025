@@ -7,6 +7,7 @@ use crate::animations::{fade_in, fade_out, scale_down, scale_up};
 use crate::config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, SIZE_XXL, TRANSPARENT};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
+use crate::state::UiState;
 use crate::{globals::UiAssets, state::GameState};
 
 const NEXT_STATE: u64 = 100;
@@ -32,7 +33,12 @@ impl Plugin for RoundStartPlugin {
     }
 }
 
-fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
+fn on_enter(
+    mut commands: Commands,
+    ui_assets: Res<UiAssets>,
+    mut ui_state: ResMut<NextState<UiState>>,
+) {
+    ui_state.set(UiState::Title);
     let background_animation = fade_in().then(
         Delay::new(Duration::from_millis(
             (ANIM_SCALE_UP + ANIM_SCALE_DOWN) * 2 - ANIM_FADE_IN,
