@@ -1,10 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{
-    lens::{TransformScaleLens, UiPositionLens},
-    Animator, Tween, TweenCompleted,
-};
+use bevy_tweening::{lens::TransformScaleLens, Animator, Delay, Tween, TweenCompleted};
 
 const RESOLVE_COMPLETE_ID: u64 = 1;
 const BACK_TO_ELEMENT: u64 = 2;
@@ -12,12 +9,13 @@ const LOOP: u64 = 3;
 const COMBO_BREAKER: u64 = 4;
 
 use crate::{
-    animations::{move_in_tween, move_out_tween},
+    animations::{fade_in, fade_out, move_in_tween, move_out_tween},
     camera::{SCREEN_X, SCREEN_Y},
     combo::{GameData, ResolveResult},
-    config::SIZE_M,
+    config::{ANIM_FADE_IN, ANIM_SCROLL_LEFT, ANIM_SCROLL_RIGHT, SIZE_M, TRANSPARENT},
     events::ApplyEffectsEvent,
     globals::UiAssets,
+    helper::despawn,
     schedule::GameSet,
     state::GameState,
     types::{Outcome, Player},
@@ -27,6 +25,9 @@ use crate::{
 struct TransitionTitle;
 
 pub struct ResolveActionPlugin;
+
+#[derive(Component, Debug)]
+pub struct ResolveActionPopup;
 
 impl Plugin for ResolveActionPlugin {
     fn build(&self, app: &mut App) {
@@ -40,6 +41,10 @@ impl Plugin for ResolveActionPlugin {
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::ResolveAction)),
         );
+        app.add_systems(
+            OnExit(GameState::ResolveAction),
+            (despawn::<ResolveActionPopup>, despawn::<TransitionTitle>).in_set(GameSet::Ui),
+        );
     }
 }
 
@@ -48,6 +53,14 @@ const IMAGE_HEIGHT: f32 = 400.;
 
 fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<GameData>) {
     let result = game_data.get_action_result();
+
+    let background_animation = fade_in().then(
+        Delay::new(Duration::from_millis(
+            ANIM_SCROLL_LEFT + ANIM_SCROLL_RIGHT - ANIM_FADE_IN,
+        ))
+        .then(fade_out().with_completed_event(RESOLVE_COMPLETE_ID)),
+    );
+
     let move_in_tween = move_in_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
 
     let move_out_tween = move_out_tween(&IMAGE_WIDTH, &IMAGE_HEIGHT);
@@ -55,22 +68,36 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
     let sequence = move_in_tween.then(move_out_tween.with_completed_event(RESOLVE_COMPLETE_ID));
 
     // Image
-    commands.spawn((
-        Node {
-            width: Val::Px(800.0),
-            height: Val::Px(400.0),
-            left: Val::Px(-SCREEN_X),
-            top: Val::Px(SCREEN_Y / 2.),
-            right: Val::Auto,
-            bottom: Val::Auto,
-            border: UiRect::all(Val::Px(10.0)),
-            ..default()
-        },
-        ImageNode::new(ui_assets.get_result(result)),
-        Animator::new(sequence),
-        BorderColor(Color::BLACK),
-        BorderRadius::ZERO,
-    ));
+    commands
+        .spawn((
+            ResolveActionPopup,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            BackgroundColor(TRANSPARENT),
+            Animator::new(background_animation),
+        ))
+        .with_child((
+            Node {
+                width: Val::Px(800.0),
+                height: Val::Px(400.0),
+                left: Val::Px(-SCREEN_X),
+                top: Val::Px(SCREEN_Y / 2.),
+                right: Val::Auto,
+                bottom: Val::Auto,
+                border: UiRect::all(Val::Px(10.0)),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            ImageNode::new(ui_assets.get_result(result)),
+            Animator::new(sequence),
+            BorderColor(Color::BLACK),
+            BorderRadius::ZERO,
+        ));
 }
 
 fn update_next_flow(
@@ -79,7 +106,6 @@ fn update_next_flow(
     mut writer: EventWriter<ApplyEffectsEvent>,
     mut game_data: ResMut<GameData>,
     mut game_flow: ResMut<NextState<GameState>>,
-    query: Query<Entity, With<TransitionTitle>>,
     ui_assets: Res<UiAssets>,
 ) {
     for event in reader.read() {
@@ -125,23 +151,14 @@ fn update_next_flow(
                 }
             }
             BACK_TO_ELEMENT => {
-                for entity in &query {
-                    commands.entity(entity).despawn_recursive();
-                }
                 game_data.action = 0;
                 game_flow.set(GameState::SelectElement);
             }
             COMBO_BREAKER => {
-                for entity in &query {
-                    commands.entity(entity).despawn_recursive();
-                }
                 game_data.action = 0;
                 game_flow.set(GameState::SelectElement);
             }
             LOOP => {
-                for entity in &query {
-                    commands.entity(entity).despawn_recursive();
-                }
                 game_flow.set(GameState::SelectAction);
             }
             _ => (),
