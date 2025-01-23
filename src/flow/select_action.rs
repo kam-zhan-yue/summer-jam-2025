@@ -74,8 +74,16 @@ impl Plugin for SelectActionPlugin {
 fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
+    mut countdown: ResMut<Countdown>,
     mut next_ui: ResMut<NextState<UiState>>,
+    game_data: Res<GameData>,
 ) {
+    if game_data.action > 1 {
+        countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
+        next_ui.set(UiState::Countdown);
+        return;
+    }
+
     next_ui.set(UiState::Title);
 
     let background_animation = fade_in().then(

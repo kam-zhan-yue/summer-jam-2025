@@ -28,7 +28,7 @@ pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 // ====== ANIMATIONS ======
 pub const ANIM_SCROLL_LEFT: u64 = 1200;
-pub const ANIM_STAY: u64 = 1500;
+pub const ANIM_STAY: u64 = 1000;
 pub const ANIM_SCROLL_RIGHT: u64 = 1200;
 pub const ANIM_FADE_IN: u64 = 700;
 pub const ANIM_FADE_OUT: u64 = 1000;

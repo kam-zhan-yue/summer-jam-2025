@@ -10,19 +10,22 @@ const COMBO_BREAKER: u64 = 4;
 const REMOVE_CHOICES: u64 = 900;
 
 use crate::{
-    animations::{fade_in, fade_out, loss_sequence, move_in_tween, move_out_tween, won_sequence},
+    animations::{
+        fade_in, fade_out, loss_sequence, move_in_tween, move_out_tween, scale_down, scale_up,
+        won_sequence,
+    },
     camera::{SCREEN_X, SCREEN_Y},
     combo::{GameData, ResolveResult},
     config::{
         ANIM_FADE_IN, ANIM_FADE_IN_COLOUR, ANIM_FADE_OUT_COLOUR, ANIM_SCROLL_LEFT,
-        ANIM_SCROLL_RIGHT, ANIM_STAY, SIZE_M, TRANSPARENT,
+        ANIM_SCROLL_RIGHT, ANIM_STAY, SIZE_M, SIZE_S, TRANSPARENT,
     },
     events::ApplyEffectsEvent,
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
     state::GameState,
-    types::{Choice, Outcome, Player},
+    types::{Outcome, Player},
 };
 
 #[derive(Component, Debug)]
@@ -100,10 +103,7 @@ fn on_enter(
     let sequence = Delay::new(Duration::from_millis(ANIM_FADE_IN_COLOUR))
         .with_completed_event(REMOVE_CHOICES)
         .then(
-            move_in_tween.then(
-                Delay::new(Duration::from_millis(ANIM_STAY))
-                    .then(move_out_tween.with_completed_event(RESOLVE_COMPLETE_ID)),
-            ),
+            move_in_tween.then(Delay::new(Duration::from_millis(ANIM_STAY)).then(move_out_tween)),
         );
 
     commands
@@ -274,37 +274,13 @@ fn update_next_flow(
 }
 
 fn back_to_element(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
-    let tween_scale = Tween::new(
-        EaseFunction::BounceOut,
-        Duration::from_millis(1500),
-        TransformScaleLens {
-            start: Vec3::splat(0.01),
-            end: Vec3::ONE,
-        },
-    )
-    .with_completed_event(BACK_TO_ELEMENT);
-    // Show a title, then go back to the element stage
-    commands
-        .spawn((
-            TransitionTitle,
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..default()
-            },
-        ))
-        .with_child((
-            Text::new("No Advantage. Restarting Round."),
-            TextFont {
-                font_size: SIZE_M,
-                font: ui_assets.ms_pain.clone(),
-                ..default()
-            },
-            TextColor(Color::BLACK),
-            Animator::new(tween_scale),
-        ));
+    transition_title(
+        commands,
+        "No Advantage",
+        "Restarting Round",
+        BACK_TO_ELEMENT,
+        &ui_assets,
+    );
 }
 
 fn loop_action(
@@ -322,37 +298,13 @@ fn loop_action(
 }
 
 fn combo_breaker(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
-    let tween_scale = Tween::new(
-        EaseFunction::BounceOut,
-        Duration::from_millis(1500),
-        TransformScaleLens {
-            start: Vec3::splat(0.01),
-            end: Vec3::ONE,
-        },
-    )
-    .with_completed_event(COMBO_BREAKER);
-    // Show a title, then go back to the element stage
-    commands
-        .spawn((
-            TransitionTitle,
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                ..default()
-            },
-        ))
-        .with_child((
-            Text::new("COMBO BREAKER!\nRestarting Round."),
-            TextFont {
-                font_size: SIZE_M,
-                font: ui_assets.ms_pain.clone(),
-                ..default()
-            },
-            TextColor(Color::BLACK),
-            Animator::new(tween_scale),
-        ));
+    transition_title(
+        commands,
+        "COMBO BREAKER!",
+        "Restarting Round",
+        BACK_TO_ELEMENT,
+        &ui_assets,
+    );
 }
 
 fn advantage(
@@ -361,31 +313,43 @@ fn advantage(
     game_data: &mut ResMut<GameData>,
     ui_assets: &Res<UiAssets>,
 ) {
-    let mut text = String::from("NONE");
     match result.outcome {
         Outcome::PlayerOne => {
-            text = "Player One has the Advantage!\nThe combat will continue until Player One loses"
-                .to_string();
+            transition_title(
+                commands,
+                "Red has the Advantage",
+                "The combat will continue until Red loses",
+                LOOP,
+                &ui_assets,
+            );
             game_data.advantage = Player::One
         }
         Outcome::PlayerTwo => {
-            text = "Player Two has the Advantage!\nThe combat will continue until Player Two loses"
-                .to_string();
+            transition_title(
+                commands,
+                "Blue has the Advantage",
+                "The combat will continue until Blue loses",
+                LOOP,
+                &ui_assets,
+            );
             game_data.advantage = Player::Two
         }
 
         _ => (),
     }
+}
 
-    let tween_scale = Tween::new(
-        EaseFunction::BounceOut,
-        Duration::from_millis(1500),
-        TransformScaleLens {
-            start: Vec3::splat(0.01),
-            end: Vec3::ONE,
-        },
-    )
-    .with_completed_event(LOOP);
+fn transition_title(
+    commands: &mut Commands,
+    title: &str,
+    subtitle: &str,
+    next_state: u64,
+    ui_assets: &Res<UiAssets>,
+) {
+    let tween_scale = scale_up().then(
+        Delay::new(Duration::from_millis(ANIM_STAY))
+            .then(scale_down().with_completed_event(next_state)),
+    );
     // Show a title, then go back to the element stage
     commands
         .spawn((
@@ -395,19 +359,36 @@ fn advantage(
                 height: Val::Percent(100.0),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
-        ))
-        .with_child((
-            Text::new(text),
-            TextFont {
-                font_size: SIZE_M,
-                font: ui_assets.ms_pain.clone(),
+            Transform {
+                scale: Vec3::splat(0.0),
                 ..default()
             },
-            TextColor(Color::BLACK),
             Animator::new(tween_scale),
-        ));
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Text::new(title),
+                TextFont {
+                    font_size: SIZE_M,
+                    font: ui_assets.ms_pain.clone(),
+                    ..default()
+                },
+                TextColor(Color::BLACK),
+            ));
+
+            parent.spawn((
+                Text::new(subtitle),
+                TextFont {
+                    font_size: SIZE_S,
+                    font: ui_assets.ms_pain.clone(),
+                    ..default()
+                },
+                TextColor(Color::BLACK),
+            ));
+        });
 }
 
 fn game_over(game_flow: &mut ResMut<NextState<GameState>>) {
