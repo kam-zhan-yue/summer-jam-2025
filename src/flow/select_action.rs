@@ -6,7 +6,7 @@ use bevy_tweening::{lens::UiBackgroundColorLens, Animator, Delay, Tween, TweenCo
 pub const COUNTDOWN_STATE: u64 = 800;
 
 use crate::{
-    animations::{fade_in, fade_out, loss_tween, scale_down, scale_up, won_tween},
+    animations::{fade_in, fade_out, scale_down, scale_up, won_tween},
     combo::{GameData, PlayerData},
     config::{
         ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, LOSS_COLOUR, REVEAL_TIME,
@@ -70,6 +70,12 @@ impl Plugin for SelectActionPlugin {
         app.add_systems(
             OnExit(UiState::Title),
             despawn::<SelectActionTitle>
+                .in_set(GameSet::Ui)
+                .run_if(in_state(GameState::SelectAction)),
+        );
+        app.add_systems(
+            OnEnter(UiState::Reveal),
+            reveal
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::SelectAction)),
         );
