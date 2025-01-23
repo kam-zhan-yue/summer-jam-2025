@@ -10,6 +10,7 @@ pub enum GameSet {
 
 pub struct SchedulePlugin;
 
+// TODO: Find a way to create entities between UI and flow
 impl Plugin for SchedulePlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(

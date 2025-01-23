@@ -1,16 +1,16 @@
-use std::time::Duration;
+use std::{f32::consts::PI, time::Duration};
 
 use bevy::prelude::*;
 use bevy_tweening::{
-    lens::{TransformScaleLens, UiBackgroundColorLens, UiPositionLens},
-    Tween,
+    lens::{TransformPositionLens, TransformScaleLens, UiBackgroundColorLens, UiPositionLens},
+    Sequence, Tween,
 };
 
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
     config::{
         ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP, ANIM_SCROLL_LEFT,
-        ANIM_SCROLL_RIGHT, DARK, TRANSPARENT,
+        ANIM_SCROLL_RIGHT, ANIM_SHAKE, DARK, SHAKE_X, TRANSPARENT,
     },
 };
 
@@ -99,4 +99,79 @@ pub fn scale_down() -> Tween<Transform> {
             end: Vec3::ZERO,
         },
     )
+}
+
+pub fn shake_player_sequence(transform: &Transform, left: bool) -> Sequence<Transform> {
+    let move_right = Tween::new(
+        EaseFunction::Linear,
+        Duration::from_millis(ANIM_SHAKE),
+        TransformPositionLens {
+            start: Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+            end: Vec3::new(
+                transform.translation.x + SHAKE_X,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+        },
+    );
+
+    let return_from_right = Tween::new(
+        EaseFunction::Linear,
+        Duration::from_millis(ANIM_SHAKE),
+        TransformPositionLens {
+            start: Vec3::new(
+                transform.translation.x + SHAKE_X,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+            end: Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+        },
+    );
+
+    let move_left = Tween::new(
+        EaseFunction::Linear,
+        Duration::from_millis(ANIM_SHAKE),
+        TransformPositionLens {
+            start: Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+            end: Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z - SHAKE_X,
+            ),
+        },
+    );
+
+    let return_from_left = Tween::new(
+        EaseFunction::Linear,
+        Duration::from_millis(ANIM_SHAKE),
+        TransformPositionLens {
+            start: Vec3::new(
+                transform.translation.x - SHAKE_X,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+            end: Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z,
+            ),
+        },
+    );
+    if left {
+        move_left.then(return_from_left.then(move_right).then(return_from_right))
+    } else {
+        move_right.then(return_from_right.then(move_left).then(return_from_left))
+    }
 }

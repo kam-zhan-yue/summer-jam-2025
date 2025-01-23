@@ -1,11 +1,14 @@
+use crate::animations::shake_player_sequence;
 use crate::config::{FADED_PLAYER, MAX_HEALTH, START_STATE};
 use crate::events::{SelectActionEvent, SelectElementEvent};
+use crate::globals::GameAssets;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
 use crate::state::GameState;
 use crate::types::{Action, Choice, Element, Outcome, Player};
 use bevy::prelude::*;
+use bevy_tweening::Animator;
 use std::collections::HashMap;
 
 const PLAYER_LENGTH: f32 = 1.4;
@@ -179,9 +182,13 @@ impl Plugin for ComboPlugin {
         app.add_systems(OnEnter(START_STATE), setup_game);
         app.add_systems(
             OnEnter(GameState::SelectAction),
-            on_enter_select_action.in_set(GameSet::Flow),
+            fade_players.in_set(GameSet::Flow),
         );
-        app.add_systems(Update, select_action.in_set(GameSet::Flow));
+        app.add_systems(
+            OnEnter(GameState::SelectElement),
+            fade_players.in_set(GameSet::Flow),
+        );
+        app.add_systems(Update, shake_players.in_set(GameSet::Flow));
         app.add_systems(
             OnExit(GameState::GameOver),
             (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),
@@ -192,7 +199,7 @@ impl Plugin for ComboPlugin {
 fn setup_game(
     mut commands: Commands,
     settings: Res<GameSettings>,
-    asset_server: ResMut<AssetServer>,
+    game_assets: Res<GameAssets>,
     mut game_data: ResMut<GameData>,
 ) {
     game_data.reset();
@@ -251,17 +258,25 @@ fn setup_game(
     commands.spawn((
         Transform::from_xyz(-300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerOne,
-        Sprite::from_image(asset_server.load("sprites/stick_left.png")),
+        Sprite {
+            image: game_assets.player_one.clone(),
+            color: Color::WHITE,
+            ..default()
+        },
     ));
 
     commands.spawn((
         Transform::from_xyz(300., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
         PlayerTwo,
-        Sprite::from_image(asset_server.load("sprites/stick_right.png")),
+        Sprite {
+            image: game_assets.player_two.clone(),
+            color: Color::WHITE,
+            ..default()
+        },
     ));
 }
 
-fn on_enter_select_action(
+fn fade_players(
     mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
     mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
 ) {
@@ -274,10 +289,78 @@ fn on_enter_select_action(
     }
 }
 
-fn select_action(
-    mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
-    mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
-    mut reader: EventReader<SelectActionEvent>,
+fn shake_players(
+    mut commands: Commands,
+    mut player_one_query: Query<(Entity, &Transform, &mut Sprite), With<PlayerOne>>,
+    mut player_two_query: Query<
+        (Entity, &Transform, &mut Sprite),
+        (With<PlayerTwo>, Without<PlayerOne>),
+    >,
+    mut action_reader: EventReader<SelectActionEvent>,
+    mut element_reader: EventReader<SelectElementEvent>,
 ) {
-    for event in reader.read() {}
+    for event in element_reader.read() {
+        match event.player {
+            Player::One => {
+                if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
+                    update_player(
+                        &event.player,
+                        &mut commands,
+                        &entity,
+                        &transform,
+                        &mut sprite,
+                    );
+                }
+            }
+            Player::Two => {
+                if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
+                    update_player(
+                        &event.player,
+                        &mut commands,
+                        &entity,
+                        &transform,
+                        &mut sprite,
+                    );
+                }
+            }
+        }
+    }
+    for event in action_reader.read() {
+        match event.player {
+            Player::One => {
+                if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
+                    update_player(
+                        &event.player,
+                        &mut commands,
+                        &entity,
+                        &transform,
+                        &mut sprite,
+                    );
+                }
+            }
+            Player::Two => {
+                if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
+                    update_player(
+                        &event.player,
+                        &mut commands,
+                        &entity,
+                        &transform,
+                        &mut sprite,
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn update_player(
+    player: &Player,
+    commands: &mut Commands,
+    entity: &Entity,
+    transform: &Transform,
+    sprite: &mut Sprite,
+) {
+    let shake = shake_player_sequence(transform, *player == Player::One);
+    sprite.color = Color::WHITE;
+    commands.entity(*entity).insert(Animator::new(shake));
 }

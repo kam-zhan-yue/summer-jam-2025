@@ -3,7 +3,7 @@ use bevy_color::Color;
 
 use crate::state::GameState;
 
-pub const START_STATE: GameState = GameState::SelectAction;
+pub const START_STATE: GameState = GameState::GameStart;
 
 // Max Health of the player
 pub const MAX_HEALTH: i32 = 5;
@@ -33,18 +33,16 @@ pub const ANIM_FADE_IN: u64 = 700;
 pub const ANIM_FADE_OUT: u64 = 1000;
 pub const ANIM_SCALE_UP: u64 = 1200;
 pub const ANIM_SCALE_DOWN: u64 = 100;
+pub const ANIM_SHAKE: u64 = 50;
+pub const SHAKE_X: f32 = 10.0;
 pub const DARK: Color = Color::srgba(0.0, 0.0, 0.0, 0.95);
 pub const TRANSPARENT: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
 
 // ====== SELECT ACTION ======
-pub const FADED_PLAYER: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
+pub const FADED_PLAYER: Color = Color::srgba(1.0, 1.0, 1.0, 0.4);
 pub const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
 pub const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
-// Time Spent on Initial Start Round Title
-pub const ROUND_START_TIME: f32 = 3.0;
-// Time Spent Displaying Transition Titles
-pub const TITLE_TIME: f32 = 1.0;
 // Time Allowed to Choose an Element / Action
 pub const COUNTDOWN_TIME: f32 = 2.0;
 // Time Spent to Reveal Elements / Actions

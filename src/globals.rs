@@ -6,12 +6,31 @@ use crate::{
     types::{Action, Choice, Element, Outcome},
 };
 
+#[derive(Component, Debug)]
+pub struct GameAssetsPlugin;
+
+impl Plugin for GameAssetsPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<GameAssets>();
+        app.add_systems(PreStartup, setup_game_assets.in_set(GameSet::Flow));
+    }
+}
+
 pub struct GlobalPlugin;
 
 impl Plugin for GlobalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(UiAssetsPlugin);
+        app.init_resource::<UiAssets>();
+        app.init_resource::<GameAssets>();
+        app.add_systems(PreStartup, setup_ui_assets.in_set(GameSet::Flow));
+        app.add_systems(PreStartup, setup_game_assets.in_set(GameSet::Flow));
     }
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct GameAssets {
+    pub player_one: Handle<Image>,
+    pub player_two: Handle<Image>,
 }
 
 #[derive(Resource, Debug, Default)]
@@ -68,17 +87,7 @@ impl UiAssets {
     }
 }
 
-#[derive(Component, Debug)]
-pub struct UiAssetsPlugin;
-
-impl Plugin for UiAssetsPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<UiAssets>();
-        app.add_systems(PreStartup, setup.in_set(GameSet::Flow));
-    }
-}
-
-fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
+fn setup_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
     ui_assets.logo = asset_server.load("ui/game_logo.png");
     ui_assets.empty = asset_server.load("ui/empty.png");
     ui_assets.unknown = asset_server.load("ui/unknown.png");
@@ -99,4 +108,9 @@ fn setup(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
     ui_assets.result_whirly_p1 = asset_server.load("ui/result_whirly_p1.png");
     ui_assets.result_whirly_p2 = asset_server.load("ui/result_whirly_p1.png");
     ui_assets.result_draw = asset_server.load("ui/result_draw.png");
+}
+
+fn setup_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
+    game_assets.player_one = asset_server.load("sprites/stick_left.png");
+    game_assets.player_two = asset_server.load("sprites/stick_right.png");
 }
