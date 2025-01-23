@@ -78,7 +78,7 @@ fn on_enter(
     mut next_ui: ResMut<NextState<UiState>>,
     game_data: Res<GameData>,
 ) {
-    if game_data.action > 1 {
+    if game_data.action >= 1 {
         countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
         next_ui.set(UiState::Countdown);
         return;

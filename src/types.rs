@@ -9,12 +9,26 @@ pub enum Player {
     Two,
 }
 
-#[derive(Debug, Default, Eq, PartialEq, Copy, Clone, PartialOrd)]
+#[derive(Debug, Default, Eq, PartialEq, Copy, Clone)]
 pub enum Choice {
     #[default]
     None,
     Action(Action),
     Element(Element),
+}
+
+impl PartialOrd for Choice {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        println!("Choice PartialOrd | Comparing {} and {}", self, other);
+        match (self, other) {
+            (Choice::None, Choice::None) => Some(Ordering::Equal),
+            (Choice::None, _) => Some(Ordering::Less),
+            (_, Choice::None) => Some(Ordering::Greater),
+            (Choice::Action(a1), Choice::Action(a2)) => a1.partial_cmp(a2),
+            (Choice::Element(e1), Choice::Element(e2)) => e1.partial_cmp(e2),
+            _ => Some(Ordering::Equal),
+        }
+    }
 }
 
 impl Choice {
@@ -41,7 +55,7 @@ impl fmt::Display for Choice {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Action {
     #[default]
     Toilet,
@@ -87,24 +101,24 @@ impl fmt::Display for Action {
     }
 }
 
-impl Ord for Action {
-    fn cmp(&self, other: &Self) -> Ordering {
+impl PartialOrd for Action {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         use Action::*;
         match (self, other) {
-            (Toilet, Toilet) => Ordering::Equal,
-            (Underwear, Underwear) => Ordering::Equal,
-            (Hand, Hand) => Ordering::Equal,
-            (Toilet, Hand) => Ordering::Greater,
-            (Hand, Toilet) => Ordering::Less,
-            (Hand, Underwear) => Ordering::Greater,
-            (Underwear, Hand) => Ordering::Less,
-            (Underwear, Toilet) => Ordering::Greater,
-            (Toilet, Underwear) => Ordering::Less,
+            (Toilet, Toilet) => Some(Ordering::Equal),
+            (Underwear, Underwear) => Some(Ordering::Equal),
+            (Hand, Hand) => Some(Ordering::Equal),
+            (Toilet, Hand) => Some(Ordering::Greater),
+            (Hand, Toilet) => Some(Ordering::Less),
+            (Hand, Underwear) => Some(Ordering::Greater),
+            (Underwear, Hand) => Some(Ordering::Less),
+            (Underwear, Toilet) => Some(Ordering::Greater),
+            (Toilet, Underwear) => Some(Ordering::Less),
         }
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, PartialOrd)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Element {
     #[default]
     Fire,
@@ -133,19 +147,19 @@ impl fmt::Display for Element {
     }
 }
 
-impl Ord for Element {
-    fn cmp(&self, other: &Self) -> Ordering {
+impl PartialOrd for Element {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         use Element::*;
         match (self, other) {
-            (Fire, Fire) => Ordering::Equal,
-            (Water, Water) => Ordering::Equal,
-            (Grass, Grass) => Ordering::Equal,
-            (Fire, Water) => Ordering::Less,
-            (Fire, Grass) => Ordering::Greater,
-            (Water, Fire) => Ordering::Greater,
-            (Water, Grass) => Ordering::Less,
-            (Grass, Fire) => Ordering::Less,
-            (Grass, Water) => Ordering::Greater,
+            (Fire, Fire) => Some(Ordering::Equal),
+            (Water, Water) => Some(Ordering::Equal),
+            (Grass, Grass) => Some(Ordering::Equal),
+            (Fire, Water) => Some(Ordering::Less),
+            (Fire, Grass) => Some(Ordering::Greater),
+            (Water, Fire) => Some(Ordering::Greater),
+            (Water, Grass) => Some(Ordering::Less),
+            (Grass, Fire) => Some(Ordering::Less),
+            (Grass, Water) => Some(Ordering::Greater),
         }
     }
 }

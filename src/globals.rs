@@ -31,6 +31,19 @@ impl Plugin for GlobalPlugin {
 pub struct GameAssets {
     pub player_one: Handle<Image>,
     pub player_two: Handle<Image>,
+    pub aura_fire: Handle<Image>,
+    pub aura_water: Handle<Image>,
+    pub aura_grass: Handle<Image>,
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct AudioAssets {
+    pub nuggie: Vec<Handle<AudioSource>>,
+    pub wedgie: Vec<Handle<AudioSource>>,
+    pub swirly: Vec<Handle<AudioSource>>,
+    pub resolve_action: Vec<Handle<AudioSource>>,
+    pub player_one_wins: Handle<AudioSource>,
+    pub player_two_wins: Handle<AudioSource>,
 }
 
 #[derive(Resource, Debug, Default)]

@@ -27,9 +27,9 @@ pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 // ====== ANIMATIONS ======
-pub const ANIM_SCROLL_LEFT: u64 = 1200;
-pub const ANIM_STAY: u64 = 1000;
-pub const ANIM_SCROLL_RIGHT: u64 = 1200;
+pub const ANIM_SCROLL_LEFT: u64 = 1000;
+pub const ANIM_STAY: u64 = 800;
+pub const ANIM_SCROLL_RIGHT: u64 = 1000;
 pub const ANIM_FADE_IN: u64 = 700;
 pub const ANIM_FADE_OUT: u64 = 1000;
 pub const ANIM_SCALE_UP: u64 = 1200;
@@ -49,6 +49,6 @@ pub const WON_COLOUR_TRANSPARENT: Color = Color::srgba(0.2, 0.8, 0.2, 0.0);
 pub const WON_COLOUR_SOLID: Color = Color::srgba(0.2, 0.8, 0.2, 1.0);
 
 // Time Allowed to Choose an Element / Action
-pub const COUNTDOWN_TIME: f32 = 2.0;
+pub const COUNTDOWN_TIME: f32 = 4.0;
 // Time Spent to Reveal Elements / Actions
 pub const REVEAL_TIME: f32 = 2.0;
