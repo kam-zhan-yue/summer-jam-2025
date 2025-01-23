@@ -69,7 +69,6 @@ fn handle_flow(
     flow.tick(time.delta());
     if flow.timer.just_finished() {
         match current_flow.get() {
-            GameState::GameStart => next_flow.set(GameState::SelectElement),
             GameState::SelectElement => next_flow.set(GameState::SelectAction),
             GameState::SelectAction => next_flow.set(GameState::ResolveAction),
             GameState::ResolveAction => next_flow.set(GameState::GameOver),

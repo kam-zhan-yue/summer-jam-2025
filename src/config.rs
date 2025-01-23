@@ -23,6 +23,7 @@ pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 // ====== ANIMATIONS ======
+pub const BREAK: u64 = 500;
 pub const ANIM_SCROLL_LEFT: u64 = 1200;
 pub const ANIM_SCROLL_RIGHT: u64 = 1200;
 pub const ANIM_FADE_IN: u64 = 700;

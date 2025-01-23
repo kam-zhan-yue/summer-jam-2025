@@ -1,17 +1,15 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_tweening::{Animator, Delay};
+use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::animations::{fade_in, fade_out, scale_down, scale_up};
-use crate::config::{ANIM_SCALE_DOWN, ANIM_SCALE_UP, ROUND_START_TIME, SIZE_XXL, TRANSPARENT};
+use crate::config::{ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, SIZE_XXL, TRANSPARENT};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::{globals::UiAssets, state::GameState};
 
-const TITLE_ANIMATION: u64 = 100;
-
-use super::Flow;
+const NEXT_STATE: u64 = 100;
 
 pub struct RoundStartPlugin;
 
@@ -25,17 +23,25 @@ impl Plugin for RoundStartPlugin {
             OnExit(GameState::GameStart),
             despawn::<RoundStartPopup>.in_set(GameSet::Ui),
         );
+        app.add_systems(
+            Update,
+            on_complete
+                .in_set(GameSet::Ui)
+                .run_if(in_state(GameState::GameStart)),
+        );
     }
 }
 
-fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, mut flow: ResMut<Flow>) {
-    flow.reset(Timer::from_seconds(ROUND_START_TIME, TimerMode::Once));
-
+fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
     let background_animation = fade_in()
         .then(Delay::new(Duration::from_millis(ANIM_SCALE_UP + ANIM_SCALE_DOWN)).then(fade_out()));
-    let first_animation = scale_up().then(scale_down().with_completed_event(TITLE_ANIMATION));
-    let second_animation = Delay::new(Duration::from_millis(ANIM_SCALE_UP))
-        .then(scale_up().then(scale_down().with_completed_event(TITLE_ANIMATION)));
+    let first_animation = scale_up().then(scale_down());
+    let second_animation = Delay::new(Duration::from_millis(ANIM_SCALE_UP)).then(
+        scale_up().then(
+            scale_down()
+                .then(Delay::new(Duration::from_millis(BREAK)).with_completed_event(NEXT_STATE)),
+        ),
+    );
     // Fading Screen
     commands
         .spawn((
@@ -84,4 +90,15 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, mut flow: ResMut<F
                 Animator::new(second_animation),
             ));
         });
+}
+
+fn on_complete(
+    mut reader: EventReader<TweenCompleted>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    for &event in reader.read() {
+        if event.user_data == NEXT_STATE {
+            game_state.set(GameState::SelectElement);
+        }
+    }
 }
