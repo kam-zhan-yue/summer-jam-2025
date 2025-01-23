@@ -7,8 +7,8 @@ pub struct ApplyEffectsEvent;
 
 #[derive(Event, Debug, Default)]
 pub struct SelectElementEvent {
-    player: Player,
-    element: Choice,
+    pub player: Player,
+    pub element: Choice,
 }
 
 impl SelectElementEvent {
@@ -19,8 +19,8 @@ impl SelectElementEvent {
 
 #[derive(Event, Debug, Default)]
 pub struct SelectActionEvent {
-    player: Player,
-    action: Choice,
+    pub player: Player,
+    pub action: Choice,
 }
 
 impl SelectActionEvent {

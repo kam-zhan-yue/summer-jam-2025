@@ -8,6 +8,7 @@ use crate::schedule::GameSet;
 use crate::state::{GameState, UiState};
 
 use crate::globals::UiAssets;
+use crate::types::Player;
 
 #[derive(Component, Debug)]
 struct PlayerOneElement;
@@ -57,7 +58,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             spawn_element_popup(
                 Name::new("Player Two Element"),
                 parent,
-                PlayerOneElement,
+                PlayerTwoElement,
                 JustifyContent::End,
                 &ui_assets,
             );
@@ -106,14 +107,45 @@ fn spawn_element_popup(
 
 fn apply_effects(
     mut reader: EventReader<SelectElementEvent>,
-    player_one_popup: Query<&Children, With<PlayerOneElement>>,
-    player_two_popup: Query<&Children, With<PlayerTwoElement>>,
-    game_data: Res<GameData>,
+    mut player_one_popup: Query<(&mut Visibility, &Children), With<PlayerOneElement>>,
+    mut player_two_popup: Query<
+        (&mut Visibility, &Children),
+        (With<PlayerTwoElement>, Without<PlayerOneElement>),
+    >,
+    mut image_query: Query<&mut ImageNode>,
+    mut text_query: Query<&mut Text>,
     ui_assets: Res<UiAssets>,
 ) {
+    let Ok(mut player_one) = player_one_popup.get_single_mut() else {
+        return;
+    };
+    let Ok(mut player_two) = player_two_popup.get_single_mut() else {
+        return;
+    };
     for event in reader.read() {
-        if let Ok(player_one_children) = player_one_popup.get_single() {}
-
-        if let Ok(player_two_children) = player_two_popup.get_single() {}
+        match event.player {
+            Player::One => {
+                *player_one.0 = Visibility::Visible;
+                for &child in player_one.1 {
+                    if let Ok(mut text) = text_query.get_mut(child) {
+                        **text = "Test".to_string();
+                    }
+                    if let Ok(mut image) = image_query.get_mut(child) {
+                        *image = ImageNode::new(ui_assets.tool_hand.clone());
+                    }
+                }
+            }
+            Player::Two => {
+                for &child in player_two.1 {
+                    *player_two.0 = Visibility::Visible;
+                    if let Ok(mut text) = text_query.get_mut(child) {
+                        **text = "Test".to_string();
+                    }
+                    if let Ok(mut image) = image_query.get_mut(child) {
+                        *image = ImageNode::new(ui_assets.tool_hand.clone());
+                    }
+                }
+            }
+        }
     }
 }
