@@ -8,7 +8,7 @@ const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
 use crate::{
     combo::{GameData, PlayerData},
-    config::{COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME},
+    config::{COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL, TITLE_TIME},
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -102,7 +102,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             Text::new("SELECT ACTION"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: 72.0,
+                font_size: SIZE_XXL,
                 ..default()
             },
             TextColor(Color::BLACK),

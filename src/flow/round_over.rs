@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    config::NORMAL_BUTTON,
+    config::{BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M, SIZE_XL},
     globals::UiAssets,
     helper::{despawn, handle_buttons},
     schedule::GameSet,
@@ -59,7 +59,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                         Text::new("Game Over!"),
                         TextFont {
                             font: ui_assets.ms_pain.clone(),
-                            font_size: 50.0,
+                            font_size: SIZE_XL,
                             ..default()
                         },
                         TextColor::BLACK,
@@ -72,9 +72,9 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     TitleButton,
                     Button,
                     Node {
-                        width: Val::Px(150.0),
-                        height: Val::Px(40.0),
-                        border: UiRect::all(Val::Px(1.0)),
+                        width: BUTTON_WIDTH,
+                        height: BUTTON_HEIGHT,
+                        border: BUTTON_BORDER,
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
@@ -89,7 +89,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                     Text::new("Back to Title"),
                     TextFont {
                         font: ui_assets.ms_pain.clone(),
-                        font_size: 22.0,
+                        font_size: SIZE_M,
                         ..default()
                     },
                     TextColor(Color::srgb(0.9, 0.9, 0.9)),

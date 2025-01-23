@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::config::ROUND_START_TIME;
+use crate::config::{ROUND_START_TIME, SIZE_XXL};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::{globals::UiAssets, state::GameState};
@@ -39,7 +39,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, mut flow: ResMut<F
             Text::new("START"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: 72.0,
+                font_size: SIZE_XXL,
                 ..default()
             },
             TextColor(Color::BLACK),

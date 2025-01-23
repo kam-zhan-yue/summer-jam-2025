@@ -77,8 +77,8 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
-                top: Val::Px(25.0),
                 width: Val::Percent(100.0),
+                bottom: Val::Px(25.0),
                 ..default()
             },
             CountdownPopup,

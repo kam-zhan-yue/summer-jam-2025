@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     combo::{GameData, PlayerData},
-    config::{COUNTDOWN_TIME, REVEAL_TIME, TITLE_TIME},
+    config::{COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL, TITLE_TIME},
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
@@ -88,7 +88,7 @@ fn on_enter(
             Text::new("SELECT ELEMENT"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: 72.0,
+                font_size: SIZE_XXL,
                 ..default()
             },
             TextColor(Color::BLACK),

@@ -14,6 +14,7 @@ const COMBO_BREAKER: u64 = 4;
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
     combo::{GameData, ResolveResult},
+    config::SIZE_M,
     events::ApplyEffectsEvent,
     globals::UiAssets,
     schedule::GameSet,
@@ -207,7 +208,7 @@ fn back_to_element(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
         .with_child((
             Text::new("No Advantage. Restarting Round."),
             TextFont {
-                font_size: 32.0,
+                font_size: SIZE_M,
                 font: ui_assets.ms_pain.clone(),
                 ..default()
             },
@@ -255,7 +256,7 @@ fn combo_breaker(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
         .with_child((
             Text::new("COMBO BREAKER!\nRestarting Round."),
             TextFont {
-                font_size: 32.0,
+                font_size: SIZE_M,
                 font: ui_assets.ms_pain.clone(),
                 ..default()
             },
@@ -310,7 +311,7 @@ fn advantage(
         .with_child((
             Text::new(text),
             TextFont {
-                font_size: 32.0,
+                font_size: SIZE_M,
                 font: ui_assets.ms_pain.clone(),
                 ..default()
             },
