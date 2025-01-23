@@ -4,7 +4,9 @@ use bevy::prelude::*;
 use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::animations::{fade_in, fade_out, scale_down, scale_up};
-use crate::config::{ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, SIZE_XXL, TRANSPARENT};
+use crate::config::{
+    ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, SIZE_XXL, TRANSPARENT,
+};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::{globals::UiAssets, state::GameState};
@@ -33,15 +35,15 @@ impl Plugin for RoundStartPlugin {
 }
 
 fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
-    let background_animation = fade_in()
-        .then(Delay::new(Duration::from_millis(ANIM_SCALE_UP + ANIM_SCALE_DOWN)).then(fade_out()));
-    let first_animation = scale_up().then(scale_down());
-    let second_animation = Delay::new(Duration::from_millis(ANIM_SCALE_UP)).then(
-        scale_up().then(
-            scale_down()
-                .then(Delay::new(Duration::from_millis(BREAK)).with_completed_event(NEXT_STATE)),
-        ),
+    let background_animation = fade_in().then(
+        Delay::new(Duration::from_millis(
+            (ANIM_SCALE_UP + ANIM_SCALE_DOWN) * 2 - ANIM_FADE_IN,
+        ))
+        .then(fade_out().with_completed_event(NEXT_STATE)),
     );
+    let first_animation = scale_up().then(scale_down());
+    let second_animation = Delay::new(Duration::from_millis(ANIM_SCALE_UP + ANIM_SCALE_DOWN))
+        .then(scale_up().then(scale_down()));
     // Fading Screen
     commands
         .spawn((

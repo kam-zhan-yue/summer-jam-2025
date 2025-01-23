@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    config::SIZE_XXL,
+    config::{SIZE_XL, SIZE_XXL},
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -75,10 +75,11 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
         .spawn((
             Node {
                 flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::Center,
+                justify_content: JustifyContent::End,
                 align_items: AlignItems::Center,
                 width: Val::Percent(100.0),
-                bottom: Val::Px(25.0),
+                height: Val::Percent(100.0),
+                bottom: Val::Px(10.0),
                 ..default()
             },
             CountdownPopup,
@@ -89,7 +90,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             Text::new("3.0"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: SIZE_XXL,
+                font_size: SIZE_XL,
                 ..default()
             },
             TextColor(Color::BLACK),

@@ -23,14 +23,17 @@ pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 // ====== ANIMATIONS ======
-pub const BREAK: u64 = 500;
 pub const ANIM_SCROLL_LEFT: u64 = 1200;
 pub const ANIM_SCROLL_RIGHT: u64 = 1200;
 pub const ANIM_FADE_IN: u64 = 700;
-pub const ANIM_FADE_OUT: u64 = 2000;
-pub const ANIM_SCALE_UP: u64 = 1000;
+pub const ANIM_FADE_OUT: u64 = 1000;
+pub const ANIM_SCALE_UP: u64 = 1200;
 pub const ANIM_SCALE_DOWN: u64 = 100;
 pub const TRANSPARENT: Color = Color::srgba(0.0, 0.0, 0.0, 0.0);
+
+// ====== SELECT ACTION ======
+pub const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
+pub const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
 
 // Time Spent on Initial Start Round Title
 pub const ROUND_START_TIME: f32 = 3.0;

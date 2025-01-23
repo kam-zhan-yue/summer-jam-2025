@@ -1,8 +1,15 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::{
+    animations::{fade_in, fade_out, scale_down, scale_up},
     combo::{GameData, PlayerData},
-    config::{COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL, TITLE_TIME},
+    config::{
+        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, BREAK, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL,
+        TRANSPARENT,
+    },
     globals::UiAssets,
     helper::despawn,
     schedule::GameSet,
@@ -11,6 +18,8 @@ use crate::{
 };
 
 use super::countdown::Countdown;
+
+pub const COUNTDOWN_STATE: u64 = 200;
 
 #[derive(Component, Debug)]
 struct SelectElementPopup;
@@ -66,12 +75,17 @@ impl Plugin for SelectElementPlugin {
 fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
-    mut countdown: ResMut<Countdown>,
     mut next_ui: ResMut<NextState<UiState>>,
 ) {
-    countdown.reset(Timer::from_seconds(TITLE_TIME, TimerMode::Once));
     next_ui.set(UiState::Title);
-    println!("Entering Select Element");
+
+    let background_animation = fade_in().then(
+        Delay::new(Duration::from_millis(
+            ANIM_SCALE_UP + ANIM_SCALE_DOWN - ANIM_FADE_IN,
+        ))
+        .then(fade_out().with_completed_event(COUNTDOWN_STATE)),
+    );
+    let title_animation = scale_up().then(scale_down());
     commands
         .spawn((
             Node {
@@ -81,6 +95,8 @@ fn on_enter(
                 justify_content: JustifyContent::Center,
                 ..default()
             },
+            BackgroundColor(TRANSPARENT),
+            Animator::new(background_animation),
             SelectElementPopup,
         ))
         .with_child((
@@ -91,7 +107,12 @@ fn on_enter(
                 font_size: SIZE_XXL,
                 ..default()
             },
-            TextColor(Color::BLACK),
+            Node {
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+            Animator::new(title_animation),
         ));
 }
 
@@ -101,15 +122,18 @@ fn handle_countdown(
     mut next_ui_flow: ResMut<NextState<UiState>>,
     mut next_game_flow: ResMut<NextState<GameState>>,
     time: Res<Time>,
+    mut reader: EventReader<TweenCompleted>,
 ) {
     countdown.tick(time.delta());
+
+    for event in reader.read() {
+        if event.user_data == COUNTDOWN_STATE {
+            countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
+            next_ui_flow.set(UiState::Countdown)
+        }
+    }
     if countdown.timer.just_finished() {
         match current_ui_flow.get() {
-            // Go to the countdown after the title
-            UiState::Title => {
-                countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
-                next_ui_flow.set(UiState::Countdown)
-            }
             // Go to the reveal after the countdown
             UiState::Countdown => {
                 countdown.reset(Timer::from_seconds(REVEAL_TIME, TimerMode::Once));
@@ -117,6 +141,7 @@ fn handle_countdown(
             }
             // Go to the next stage after the reveal
             UiState::Reveal => next_game_flow.set(GameState::SelectAction),
+            _ => (),
         }
     }
 }

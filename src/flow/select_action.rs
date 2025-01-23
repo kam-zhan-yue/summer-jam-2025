@@ -3,8 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_tweening::{lens::UiBackgroundColorLens, Animator, Tween};
 
-const LOSS_COLOUR: Color = Color::srgb(0.2, 0.2, 0.2);
-const WON_COLOUR: Color = Color::srgb(0.2, 0.8, 0.2);
+pub const COUNTDOWN_STATE: u64 = 800;
 
 use crate::{
     combo::{GameData, PlayerData},
