@@ -20,12 +20,11 @@ impl SelectElementEvent {
 #[derive(Event, Debug, Default)]
 pub struct SelectActionEvent {
     pub player: Player,
-    pub action: Choice,
 }
 
 impl SelectActionEvent {
-    pub fn new(player: Player, action: Choice) -> Self {
-        Self { player, action }
+    pub fn new(player: Player) -> Self {
+        Self { player }
     }
 }
 

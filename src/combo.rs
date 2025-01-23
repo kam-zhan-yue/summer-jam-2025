@@ -63,7 +63,7 @@ impl PlayerData {
     ) {
         if self.choice_selection.action != choice {
             self.choice_selection.action = choice;
-            writer.send(SelectActionEvent::new(player, choice));
+            writer.send(SelectActionEvent::new(player));
         }
     }
 }

@@ -1,16 +1,13 @@
-use std::f32::consts::PI;
-
 use bevy::prelude::*;
 
-use crate::combo::GameData;
-use crate::config::{SIZE_M, SIZE_S, START_STATE};
+use crate::config::{SIZE_S, START_STATE};
 use crate::events::SelectElementEvent;
 use crate::helper::{despawn, hide, show};
 use crate::schedule::GameSet;
 use crate::state::{GameState, UiState};
 
 use crate::globals::UiAssets;
-use crate::types::{Choice, Element, Player};
+use crate::types::{Choice, Player};
 
 #[derive(Component, Debug)]
 struct PlayerOneElement;

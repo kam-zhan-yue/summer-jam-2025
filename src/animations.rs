@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, time::Duration};
+use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_tweening::{
@@ -9,10 +9,33 @@ use bevy_tweening::{
 use crate::{
     camera::{SCREEN_X, SCREEN_Y},
     config::{
-        ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP, ANIM_SCROLL_LEFT,
-        ANIM_SCROLL_RIGHT, ANIM_SHAKE, DARK, SHAKE_X, TRANSPARENT,
+        ANIM_FADE_COLOUR, ANIM_FADE_IN, ANIM_FADE_OUT, ANIM_SCALE_DOWN, ANIM_SCALE_UP,
+        ANIM_SCROLL_LEFT, ANIM_SCROLL_RIGHT, ANIM_SHAKE, DARK, LOSS_COLOUR, SHAKE_X, TRANSPARENT,
+        WON_COLOUR,
     },
 };
+
+pub fn won_tween() -> Tween<BackgroundColor> {
+    Tween::new(
+        EaseFunction::QuarticIn,
+        Duration::from_secs(ANIM_FADE_COLOUR),
+        UiBackgroundColorLens {
+            start: TRANSPARENT,
+            end: WON_COLOUR,
+        },
+    )
+}
+
+pub fn loss_tween() -> Tween<BackgroundColor> {
+    Tween::new(
+        EaseFunction::QuarticIn,
+        Duration::from_secs(ANIM_FADE_COLOUR),
+        UiBackgroundColorLens {
+            start: TRANSPARENT,
+            end: LOSS_COLOUR,
+        },
+    )
+}
 
 const OFFSET: f32 = 500.;
 

@@ -89,14 +89,11 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>, game_data: Res<Gam
                 top: Val::Px(SCREEN_Y / 2.),
                 right: Val::Auto,
                 bottom: Val::Auto,
-                border: UiRect::all(Val::Px(10.0)),
                 position_type: PositionType::Absolute,
                 ..default()
             },
             ImageNode::new(ui_assets.get_result(result)),
             Animator::new(sequence),
-            BorderColor(Color::BLACK),
-            BorderRadius::ZERO,
         ));
 }
 
