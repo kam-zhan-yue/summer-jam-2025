@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 
 use crate::combo::GameData;
@@ -8,7 +10,7 @@ use crate::schedule::GameSet;
 use crate::state::{GameState, UiState};
 
 use crate::globals::UiAssets;
-use crate::types::Player;
+use crate::types::{Choice, Player};
 
 #[derive(Component, Debug)]
 struct PlayerOneElement;
@@ -29,6 +31,7 @@ impl Plugin for ElementPopupPlugin {
             OnEnter(GameState::GameOver),
             despawn::<ElementPopup>.in_set(GameSet::Ui),
         );
+        app.add_systems(OnEnter(GameState::SelectElement), hide::<ElementPopup>);
         app.add_systems(OnEnter(UiState::Title), hide::<ElementPopup>);
         app.add_systems(OnExit(UiState::Title), show::<ElementPopup>);
     }
@@ -42,7 +45,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                padding: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(75.0), Val::Px(10.0)),
+                padding: UiRect::new(Val::Px(10.0), Val::Px(10.0), Val::Px(90.0), Val::Px(10.0)),
                 align_items: AlignItems::FlexStart,
                 ..default()
             },
@@ -116,36 +119,51 @@ fn apply_effects(
     mut text_query: Query<&mut Text>,
     ui_assets: Res<UiAssets>,
 ) {
-    let Ok(mut player_one) = player_one_popup.get_single_mut() else {
-        return;
-    };
-    let Ok(mut player_two) = player_two_popup.get_single_mut() else {
-        return;
-    };
     for event in reader.read() {
         match event.player {
             Player::One => {
-                *player_one.0 = Visibility::Visible;
-                for &child in player_one.1 {
-                    if let Ok(mut text) = text_query.get_mut(child) {
-                        **text = "Test".to_string();
-                    }
-                    if let Ok(mut image) = image_query.get_mut(child) {
-                        *image = ImageNode::new(ui_assets.tool_hand.clone());
-                    }
+                if let Ok(mut player_one) = player_one_popup.get_single_mut() {
+                    update_element(
+                        &event.element,
+                        &mut player_one.0,
+                        player_one.1,
+                        &mut text_query,
+                        &mut image_query,
+                        &ui_assets,
+                    );
                 }
             }
             Player::Two => {
-                for &child in player_two.1 {
-                    *player_two.0 = Visibility::Visible;
-                    if let Ok(mut text) = text_query.get_mut(child) {
-                        **text = "Test".to_string();
-                    }
-                    if let Ok(mut image) = image_query.get_mut(child) {
-                        *image = ImageNode::new(ui_assets.tool_hand.clone());
-                    }
+                if let Ok(mut player_two) = player_two_popup.get_single_mut() {
+                    update_element(
+                        &event.element,
+                        &mut player_two.0,
+                        player_two.1,
+                        &mut text_query,
+                        &mut image_query,
+                        &ui_assets,
+                    );
                 }
             }
+        }
+    }
+}
+
+fn update_element(
+    element: &Choice,
+    visibility: &mut Visibility,
+    children: &Children,
+    text_query: &mut Query<&mut Text>,
+    image_query: &mut Query<&mut ImageNode>,
+    ui_assets: &Res<UiAssets>,
+) {
+    *visibility = Visibility::Visible;
+    for &child in children {
+        if let Ok(mut text) = text_query.get_mut(child) {
+            **text = " attacks do double damage!".to_string();
+        }
+        if let Ok(mut image) = image_query.get_mut(child) {
+            *image = ImageNode::new(ui_assets.get_icon(*element));
         }
     }
 }
