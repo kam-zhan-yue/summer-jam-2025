@@ -22,8 +22,11 @@ impl Plugin for GlobalPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<UiAssets>();
         app.init_resource::<GameAssets>();
-        app.add_systems(PreStartup, setup_ui_assets.in_set(GameSet::Flow));
-        app.add_systems(PreStartup, setup_game_assets.in_set(GameSet::Flow));
+        app.init_resource::<AudioAssets>();
+        app.add_systems(
+            PreStartup,
+            (setup_ui_assets, setup_game_assets, setup_audio_assets).in_set(GameSet::Flow),
+        );
     }
 }
 
@@ -41,7 +44,8 @@ pub struct AudioAssets {
     pub nuggie: Vec<Handle<AudioSource>>,
     pub wedgie: Vec<Handle<AudioSource>>,
     pub swirly: Vec<Handle<AudioSource>>,
-    pub resolve_action: Vec<Handle<AudioSource>>,
+    pub laugh: Vec<Handle<AudioSource>>,
+    pub ready: Handle<AudioSource>,
     pub player_one_wins: Handle<AudioSource>,
     pub player_two_wins: Handle<AudioSource>,
 }
@@ -126,4 +130,45 @@ fn setup_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAsset
 fn setup_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
     game_assets.player_one = asset_server.load("sprites/stick_left.png");
     game_assets.player_two = asset_server.load("sprites/stick_right.png");
+}
+
+fn setup_audio_assets(asset_server: Res<AssetServer>, mut audio_assets: ResMut<AudioAssets>) {
+    audio_assets
+        .laugh
+        .push(asset_server.load("audio/laugh_1.ogg"));
+    audio_assets
+        .laugh
+        .push(asset_server.load("audio/laugh_2.ogg"));
+    audio_assets
+        .laugh
+        .push(asset_server.load("audio/laugh_3.ogg"));
+
+    audio_assets
+        .nuggie
+        .push(asset_server.load("audio/nuggie_1.ogg"));
+
+    audio_assets
+        .nuggie
+        .push(asset_server.load("audio/nuggie_2.ogg"));
+
+    audio_assets
+        .nuggie
+        .push(asset_server.load("audio/nuggie_3.ogg"));
+
+    audio_assets
+        .swirly
+        .push(asset_server.load("audio/swirly_1.ogg"));
+
+    audio_assets
+        .swirly
+        .push(asset_server.load("audio/swirly_2.ogg"));
+
+    audio_assets
+        .wedgie
+        .push(asset_server.load("audio/wedgie_1.ogg"));
+
+    audio_assets.player_one_wins = asset_server.load("audio/player_1_wins.ogg");
+    audio_assets.player_two_wins = asset_server.load("audio/player_2_wins.ogg");
+
+    audio_assets.ready = asset_server.load("audio/ready.ogg");
 }
