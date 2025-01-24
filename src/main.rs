@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod animations;
 mod camera;
@@ -42,6 +41,5 @@ fn main() {
         .add_plugins(UIPlugin)
         .add_plugins(TweeningPlugin)
         .add_plugins(ComputerPlugin)
-        // .add_plugins(WorldInspectorPlugin::new())
         .run();
 }
