@@ -145,21 +145,13 @@ pub fn scale_down() -> Tween<Transform> {
     )
 }
 
-pub fn shake_player_sequence(transform: &Transform, left: bool) -> Sequence<Transform> {
+pub fn shake_player_sequence(original_pos: &Vec3, left: bool) -> Sequence<Transform> {
     let move_right = Tween::new(
         EaseFunction::Linear,
         Duration::from_millis(ANIM_SHAKE),
         TransformPositionLens {
-            start: Vec3::new(
-                transform.translation.x,
-                transform.translation.y,
-                transform.translation.z,
-            ),
-            end: Vec3::new(
-                transform.translation.x + SHAKE_X,
-                transform.translation.y,
-                transform.translation.z,
-            ),
+            start: Vec3::new(original_pos.x, original_pos.y, original_pos.z),
+            end: Vec3::new(original_pos.x + SHAKE_X, original_pos.y, original_pos.z),
         },
     );
 
@@ -167,16 +159,8 @@ pub fn shake_player_sequence(transform: &Transform, left: bool) -> Sequence<Tran
         EaseFunction::Linear,
         Duration::from_millis(ANIM_SHAKE),
         TransformPositionLens {
-            start: Vec3::new(
-                transform.translation.x + SHAKE_X,
-                transform.translation.y,
-                transform.translation.z,
-            ),
-            end: Vec3::new(
-                transform.translation.x,
-                transform.translation.y,
-                transform.translation.z,
-            ),
+            start: Vec3::new(original_pos.x + SHAKE_X, original_pos.y, original_pos.z),
+            end: Vec3::new(original_pos.x, original_pos.y, original_pos.z),
         },
     );
 
@@ -184,16 +168,8 @@ pub fn shake_player_sequence(transform: &Transform, left: bool) -> Sequence<Tran
         EaseFunction::Linear,
         Duration::from_millis(ANIM_SHAKE),
         TransformPositionLens {
-            start: Vec3::new(
-                transform.translation.x,
-                transform.translation.y,
-                transform.translation.z,
-            ),
-            end: Vec3::new(
-                transform.translation.x,
-                transform.translation.y,
-                transform.translation.z - SHAKE_X,
-            ),
+            start: Vec3::new(original_pos.x, original_pos.y, original_pos.z),
+            end: Vec3::new(original_pos.x, original_pos.y, original_pos.z - SHAKE_X),
         },
     );
 
@@ -201,16 +177,8 @@ pub fn shake_player_sequence(transform: &Transform, left: bool) -> Sequence<Tran
         EaseFunction::Linear,
         Duration::from_millis(ANIM_SHAKE),
         TransformPositionLens {
-            start: Vec3::new(
-                transform.translation.x - SHAKE_X,
-                transform.translation.y,
-                transform.translation.z,
-            ),
-            end: Vec3::new(
-                transform.translation.x,
-                transform.translation.y,
-                transform.translation.z,
-            ),
+            start: Vec3::new(original_pos.x - SHAKE_X, original_pos.y, original_pos.z),
+            end: Vec3::new(original_pos.x, original_pos.y, original_pos.z),
         },
     );
     if left {

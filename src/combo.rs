@@ -62,6 +62,7 @@ impl PlayerInput {
 
 #[derive(Debug)]
 pub struct PlayerData {
+    pub starting_pos: Vec3,
     pub choice_selection: ChoiceSelection,
     pub health: i32,
     pub input: PlayerInput,
@@ -95,6 +96,7 @@ impl PlayerData {
 impl Default for PlayerData {
     fn default() -> Self {
         Self {
+            starting_pos: Vec3::default(),
             choice_selection: ChoiceSelection::default(),
             input: PlayerInput::default(),
             health: MAX_HEALTH,
@@ -290,12 +292,15 @@ fn setup_game(
         game_data.player_two.input = PlayerInput::new(player_two_inputs);
     }
 
+    game_data.player_one.starting_pos = Vec3::new(-360.0, -100.0, 0.0);
+    game_data.player_two.starting_pos = Vec3::new(360.0, -100.0, 0.0);
+
     let layout = TextureAtlasLayout::from_grid(UVec2::new(302, 286), 2, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     spawn_player(
         &mut commands,
         PlayerOne,
-        Vec3::new(-360.0, -100.0, 0.0),
+        game_data.player_one.starting_pos,
         AnimationConfig::new(0, 1, 10),
         game_assets.player_one.neutral.clone(),
         texture_atlas_layout.clone(),
@@ -303,7 +308,7 @@ fn setup_game(
     spawn_player(
         &mut commands,
         PlayerTwo,
-        Vec3::new(360.0, -100.0, 0.0),
+        game_data.player_two.starting_pos,
         AnimationConfig::new(0, 1, 10),
         game_assets.player_two.neutral.clone(),
         texture_atlas_layout.clone(),
@@ -411,35 +416,33 @@ fn reset_player_elements(
 
 fn shake_players(
     mut commands: Commands,
-    mut player_one_query: Query<(Entity, &Transform, &mut Sprite), With<PlayerOne>>,
-    mut player_two_query: Query<
-        (Entity, &Transform, &mut Sprite),
-        (With<PlayerTwo>, Without<PlayerOne>),
-    >,
+    mut player_one_query: Query<(Entity, &mut Sprite), With<PlayerOne>>,
+    mut player_two_query: Query<(Entity, &mut Sprite), (With<PlayerTwo>, Without<PlayerOne>)>,
     mut action_reader: EventReader<SelectActionEvent>,
     mut element_reader: EventReader<SelectElementEvent>,
+    game_data: Res<GameData>,
 ) {
     for event in element_reader.read() {
         match event.player {
             Player::One => {
-                if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
+                if let Ok((entity, mut sprite)) = player_one_query.get_single_mut() {
                     shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
-                        &transform,
                         &mut sprite,
+                        &game_data.player_one.starting_pos,
                     );
                 }
             }
             Player::Two => {
-                if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
+                if let Ok((entity, mut sprite)) = player_two_query.get_single_mut() {
                     shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
-                        &transform,
                         &mut sprite,
+                        &game_data.player_two.starting_pos,
                     );
                 }
             }
@@ -448,24 +451,24 @@ fn shake_players(
     for event in action_reader.read() {
         match event.player {
             Player::One => {
-                if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
+                if let Ok((entity, mut sprite)) = player_one_query.get_single_mut() {
                     shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
-                        &transform,
                         &mut sprite,
+                        &game_data.player_one.starting_pos,
                     );
                 }
             }
             Player::Two => {
-                if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
+                if let Ok((entity, mut sprite)) = player_two_query.get_single_mut() {
                     shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
-                        &transform,
                         &mut sprite,
+                        &game_data.player_two.starting_pos,
                     );
                 }
             }
@@ -477,10 +480,10 @@ fn shake_player(
     player: &Player,
     commands: &mut Commands,
     entity: &Entity,
-    transform: &Transform,
     sprite: &mut Sprite,
+    original_pos: &Vec3,
 ) {
-    let shake = shake_player_sequence(transform, *player == Player::One);
+    let shake = shake_player_sequence(original_pos, *player == Player::One);
     sprite.color = Color::WHITE;
     commands.entity(*entity).insert(Animator::new(shake));
 }
