@@ -1,11 +1,13 @@
 use crate::config::{
-    BORDER_RADIUS, BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M, START_STATE,
+    BGM_VOLUME, BORDER_RADIUS, BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M,
+    START_STATE,
 };
-use crate::globals::UiAssets;
+use crate::globals::{AudioAssets, UiAssets};
 use crate::helper::{despawn, handle_buttons};
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
 use crate::state::GameState;
+use bevy::audio::{PlaybackMode, Volume};
 use bevy::prelude::*;
 
 #[derive(Component, Debug)]
@@ -39,7 +41,11 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
+pub fn spawn_main_menu(
+    mut commands: Commands,
+    ui_assets: Res<UiAssets>,
+    audio_assets: Res<AudioAssets>,
+) {
     // Spawn the Root Node
     commands
         .spawn((
@@ -56,6 +62,15 @@ pub fn spawn_main_menu(mut commands: Commands, ui_assets: Res<UiAssets>) {
             MainMenu,
         ))
         .with_children(|parent| {
+            // Audio
+            parent.spawn((
+                AudioPlayer::new(audio_assets.title_loop.clone()),
+                PlaybackSettings {
+                    mode: PlaybackMode::Loop,
+                    volume: Volume::new(BGM_VOLUME),
+                    ..default()
+                },
+            ));
             // Title
             parent
                 .spawn(Node {

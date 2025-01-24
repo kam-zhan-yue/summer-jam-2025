@@ -64,6 +64,8 @@ pub struct AudioAssets {
     pub fight: Handle<AudioSource>,
     pub select_element: Handle<AudioSource>,
     pub combo_breaker: Handle<AudioSource>,
+    pub title_loop: Handle<AudioSource>,
+    pub game_loop: Handle<AudioSource>,
 }
 
 #[derive(Resource, Debug, Default)]
@@ -233,4 +235,6 @@ fn setup_audio_assets(asset_server: Res<AssetServer>, mut audio_assets: ResMut<A
     audio_assets.player_one_advantage = asset_server.load("audio/announce_one_adv.ogg");
     audio_assets.player_two_advantage = asset_server.load("audio/announce_two_adv.ogg");
     audio_assets.no_advantage = asset_server.load("audio/announce_no_adv.ogg");
+    audio_assets.title_loop = asset_server.load("audio/bgm_title_loop.ogg");
+    audio_assets.game_loop = asset_server.load("audio/bgm_game_loop.ogg");
 }

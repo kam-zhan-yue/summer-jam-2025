@@ -8,6 +8,9 @@ pub const START_STATE: GameState = GameState::GameStart;
 // Max Health of the player
 pub const MAX_HEALTH: i32 = 5;
 
+// ====== AUDIO ======
+pub const BGM_VOLUME: f32 = 0.6;
+
 // ====== FONTS ======
 pub const SIZE_XXXL: f32 = 128.0;
 pub const SIZE_XXL: f32 = 96.0;
