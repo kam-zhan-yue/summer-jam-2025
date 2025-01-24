@@ -19,7 +19,6 @@ pub enum Choice {
 
 impl PartialOrd for Choice {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        println!("Choice PartialOrd | Comparing {} and {}", self, other);
         match (self, other) {
             (Choice::None, Choice::None) => Some(Ordering::Equal),
             (Choice::None, _) => Some(Ordering::Less),

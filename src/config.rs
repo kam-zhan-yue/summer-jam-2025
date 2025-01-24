@@ -11,10 +11,10 @@ pub const MAX_HEALTH: i32 = 5;
 // ====== FONTS ======
 pub const SIZE_XXL: f32 = 128.0;
 pub const SIZE_XL: f32 = 64.0;
-pub const SIZE_L: f32 = 48.0;
+// pub const SIZE_L: f32 = 48.0;
 pub const SIZE_M: f32 = 32.0;
 pub const SIZE_S: f32 = 24.0;
-pub const SIZE_XS: f32 = 16.0;
+// pub const SIZE_XS: f32 = 16.0;
 
 // ====== IMAGES ======
 pub const CONTROLS_WIDTH: f32 = 377.0;

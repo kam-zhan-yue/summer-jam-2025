@@ -6,10 +6,7 @@ use bevy_tweening::{
     Sequence, Tween,
 };
 
-use crate::{
-    camera::{SCREEN_X, SCREEN_Y},
-    config::*,
-};
+use crate::config::*;
 
 pub fn won_sequence() -> Sequence<BackgroundColor> {
     let fade_in = Tween::new(

@@ -162,7 +162,6 @@ impl GameData {
     pub fn resolve(&self, get_choice: fn(&PlayerData) -> Choice) -> ResolveResult {
         let choice_one = get_choice(&self.player_one);
         let choice_two = get_choice(&self.player_two);
-        println!("Player One: {:?} Player Two: {:?} ", choice_one, choice_two);
         if choice_one > choice_two {
             ResolveResult {
                 outcome: Outcome::PlayerOne,
