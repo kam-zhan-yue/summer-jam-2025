@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 
 use crate::{
     combo::ResolveResult,
@@ -80,6 +80,13 @@ pub struct UiAssets {
     pub result_whirly_p2: Handle<Image>,
     pub result_wedgie_p1: Handle<Image>,
     pub result_wedgie_p2: Handle<Image>,
+    pub chart_actions: Handle<Image>,
+    pub chart_combos: Handle<Image>,
+    pub chart_elements: Handle<Image>,
+    pub controls_actions_p1: Handle<Image>,
+    pub controls_actions_p2: Handle<Image>,
+    pub controls_elements_p1: Handle<Image>,
+    pub controls_elements_p2: Handle<Image>,
     pub result_draw: Handle<Image>,
     pub fira_sans_bold: Handle<Font>,
     pub ms_pain: Handle<Font>,
@@ -88,7 +95,7 @@ pub struct UiAssets {
 impl UiAssets {
     pub fn get_icon(&self, choice: Choice) -> Handle<Image> {
         match choice {
-            Choice::None => self.unknown.clone(),
+            Choice::None => self.empty.clone(),
             Choice::Action(Action::Hand) => self.tool_hand.clone(),
             Choice::Action(Action::Toilet) => self.tool_toilet.clone(),
             Choice::Action(Action::Underwear) => self.tool_underwear.clone(),
@@ -136,6 +143,13 @@ fn setup_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAsset
     ui_assets.result_whirly_p1 = asset_server.load("ui/result_whirly_p1.png");
     ui_assets.result_whirly_p2 = asset_server.load("ui/result_whirly_p1.png");
     ui_assets.result_draw = asset_server.load("ui/result_draw.png");
+    ui_assets.chart_combos = asset_server.load("ui/chart_combos.png");
+    ui_assets.chart_actions = asset_server.load("ui/chart_actions.png");
+    ui_assets.chart_elements = asset_server.load("ui/chart_elements.png");
+    ui_assets.controls_actions_p1 = asset_server.load("ui/controls_actions_p1.png");
+    ui_assets.controls_actions_p2 = asset_server.load("ui/controls_actions_p2.png");
+    ui_assets.controls_elements_p1 = asset_server.load("ui/controls_elements_p1.png");
+    ui_assets.controls_elements_p2 = asset_server.load("ui/controls_elements_p2.png");
 }
 
 fn setup_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
