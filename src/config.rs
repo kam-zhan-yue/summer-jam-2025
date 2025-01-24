@@ -6,7 +6,7 @@ use crate::state::GameState;
 pub const START_STATE: GameState = GameState::GameStart;
 
 // Max Health of the player
-pub const MAX_HEALTH: i32 = 5;
+pub const MAX_HEALTH: i32 = 1;
 
 // ====== FONTS ======
 pub const SIZE_XXL: f32 = 128.0;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     combo::GameData,
-    config::{BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M, SIZE_XL},
+    config::{BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, DARK, NORMAL_BUTTON, SIZE_S, SIZE_XL},
     globals::{AudioAssets, UiAssets},
     helper::{despawn, handle_buttons},
     schedule::GameSet,
@@ -62,6 +62,7 @@ fn on_enter(
                 ..default()
             },
             RoundOverPopup,
+            BackgroundColor(DARK),
         ))
         .with_children(|parent| {
             // Title
@@ -81,7 +82,7 @@ fn on_enter(
                             font_size: SIZE_XL,
                             ..default()
                         },
-                        TextColor::BLACK,
+                        TextColor::WHITE,
                         Label,
                     ));
                 });
@@ -108,7 +109,7 @@ fn on_enter(
                     Text::new("Back to Title"),
                     TextFont {
                         font: ui_assets.ms_pain.clone(),
-                        font_size: SIZE_M,
+                        font_size: SIZE_S,
                         ..default()
                     },
                     TextColor(Color::srgb(0.9, 0.9, 0.9)),
