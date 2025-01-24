@@ -10,8 +10,32 @@ use crate::types::{Action, Choice, Element, Outcome, Player};
 use bevy::prelude::*;
 use bevy_tweening::Animator;
 use std::collections::HashMap;
+use std::time::Duration;
 
 const PLAYER_LENGTH: f32 = 1.6;
+
+#[derive(Component)]
+struct AnimationConfig {
+    first_sprite_index: usize,
+    last_sprite_index: usize,
+    fps: u8,
+    frame_timer: Timer,
+}
+
+impl AnimationConfig {
+    fn new(first: usize, last: usize, fps: u8) -> Self {
+        Self {
+            first_sprite_index: first,
+            last_sprite_index: last,
+            fps,
+            frame_timer: Self::timer_from_fps(fps),
+        }
+    }
+
+    fn timer_from_fps(fps: u8) -> Timer {
+        Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
+    }
+}
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct ChoiceSelection {
@@ -209,6 +233,7 @@ fn setup_game(
     settings: Res<GameSettings>,
     game_assets: Res<GameAssets>,
     mut game_data: ResMut<GameData>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     game_data.reset();
     let mut player_one_inputs: HashMap<KeyCode, ChoiceSelection> = HashMap::new();
@@ -263,24 +288,48 @@ fn setup_game(
         game_data.player_two.input = PlayerInput::new(player_two_inputs);
     }
 
-    commands.spawn((
-        Transform::from_xyz(-360., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
+    let texture = game_assets.player_two.neutral.clone();
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(302, 286), 2, 1, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    spawn_player(
+        &mut commands,
         PlayerOne,
-        Sprite {
-            image: game_assets.player_one.clone(),
-            color: Color::WHITE,
-            ..default()
-        },
-    ));
+        Vec3::new(-360.0, -100.0, 0.0),
+        AnimationConfig::new(1, 2, 10),
+        game_assets.player_one.neutral.clone(),
+        texture_atlas_layout.clone(),
+    );
+    spawn_player(
+        &mut commands,
+        PlayerOne,
+        Vec3::new(360.0, -100.0, 0.0),
+        AnimationConfig::new(1, 2, 10),
+        game_assets.player_two.neutral.clone(),
+        texture_atlas_layout.clone(),
+    );
+}
 
+fn spawn_player(
+    commands: &mut Commands,
+    player: impl Component,
+    translation: Vec3,
+    animation_config: AnimationConfig,
+    texture: Handle<Image>,
+    texture_atlas_layout: Handle<TextureAtlasLayout>,
+) {
     commands.spawn((
-        Transform::from_xyz(360., -100., 0.).with_scale(Vec3::splat(PLAYER_LENGTH)),
-        PlayerTwo,
+        player,
+        Transform::from_translation(translation).with_scale(Vec3::splat(PLAYER_LENGTH)),
         Sprite {
-            image: game_assets.player_two.clone(),
+            image: texture,
+            texture_atlas: Some(TextureAtlas {
+                layout: texture_atlas_layout.clone(),
+                index: animation_config.first_sprite_index,
+            }),
             color: Color::WHITE,
             ..default()
         },
+        animation_config,
     ));
 }
 

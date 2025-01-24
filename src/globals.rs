@@ -30,13 +30,18 @@ impl Plugin for GlobalPlugin {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct PlayerAsset {
+    pub neutral: Handle<Image>,
+    pub fire: Handle<Image>,
+    pub grass: Handle<Image>,
+    pub water: Handle<Image>,
+}
+
 #[derive(Resource, Debug, Default)]
 pub struct GameAssets {
-    pub player_one: Handle<Image>,
-    pub player_two: Handle<Image>,
-    pub aura_fire: Handle<Image>,
-    pub aura_water: Handle<Image>,
-    pub aura_grass: Handle<Image>,
+    pub player_one: PlayerAsset,
+    pub player_two: PlayerAsset,
 }
 
 #[derive(Resource, Debug, Default)]
@@ -153,8 +158,18 @@ fn setup_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAsset
 }
 
 fn setup_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
-    game_assets.player_one = asset_server.load("sprites/stick_left.png");
-    game_assets.player_two = asset_server.load("sprites/stick_right.png");
+    game_assets.player_one = PlayerAsset {
+        neutral: asset_server.load("sprites/sprite_red.png"),
+        fire: asset_server.load("sprites/sprite_red_fire.png"),
+        water: asset_server.load("sprites/sprite_red_water.png"),
+        grass: asset_server.load("sprites/sprite_red_grass.png"),
+    };
+    game_assets.player_two = PlayerAsset {
+        neutral: asset_server.load("sprites/sprite_blue.png"),
+        fire: asset_server.load("sprites/sprite_blue_fire.png"),
+        water: asset_server.load("sprites/sprite_blue_water.png"),
+        grass: asset_server.load("sprites/sprite_blue_grass.png"),
+    };
 }
 
 fn setup_audio_assets(asset_server: Res<AssetServer>, mut audio_assets: ResMut<AudioAssets>) {
