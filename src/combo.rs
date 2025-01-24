@@ -160,6 +160,14 @@ impl GameData {
     pub fn can_end_game(&self) -> bool {
         self.player_one.health <= 0 || self.player_two.health <= 0
     }
+
+    pub fn get_winner(&self) -> Player {
+        if self.player_one.health > self.player_two.health {
+            Player::One
+        } else {
+            Player::Two
+        }
+    }
 }
 
 #[derive(Component, Debug)]

@@ -5,6 +5,7 @@ use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::animations::{fade_in, fade_out, scale_down, scale_up};
 use crate::config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, SIZE_XXL, TRANSPARENT};
+use crate::globals::AudioAssets;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::state::UiState;
@@ -35,8 +36,9 @@ impl Plugin for RoundStartPlugin {
 
 fn on_enter(
     mut commands: Commands,
-    ui_assets: Res<UiAssets>,
     mut ui_state: ResMut<NextState<UiState>>,
+    ui_assets: Res<UiAssets>,
+    audio_assets: Res<AudioAssets>,
 ) {
     ui_state.set(UiState::Title);
     let background_animation = fade_in().then(
@@ -95,6 +97,7 @@ fn on_enter(
                 TextColor(Color::WHITE),
                 Animator::new(second_animation),
             ));
+            parent.spawn(AudioPlayer::new(audio_assets.ready.clone()));
         });
 }
 

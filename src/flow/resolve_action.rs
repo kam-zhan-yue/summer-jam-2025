@@ -1,13 +1,14 @@
 use std::time::Duration;
 
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_tweening::{lens::TransformScaleLens, Animator, Delay, Sequence, Tween, TweenCompleted};
+use bevy_tweening::{Animator, Delay, Sequence, TweenCompleted};
 
 const RESOLVE_COMPLETE_ID: u64 = 1;
 const BACK_TO_ELEMENT: u64 = 2;
-const LOOP: u64 = 3;
-const COMBO_BREAKER: u64 = 4;
-const REMOVE_CHOICES: u64 = 900;
+const EVENT_LOOP: u64 = 3;
+const EVENT_COMBO_BREAKER: u64 = 4;
+const EVENT_REMOVE: u64 = 900;
+const EVENT_AUDIO: u64 = 1000;
 
 use crate::{
     animations::{
@@ -21,11 +22,11 @@ use crate::{
         ANIM_SCROLL_RIGHT, ANIM_STAY, SIZE_M, SIZE_S, TRANSPARENT,
     },
     events::ApplyEffectsEvent,
-    globals::UiAssets,
-    helper::despawn,
+    globals::{AudioAssets, UiAssets},
+    helper::{despawn, get_random},
     schedule::GameSet,
     state::GameState,
-    types::{Outcome, Player},
+    types::{Action, Choice, Outcome, Player},
 };
 
 #[derive(Component, Debug)]
@@ -63,9 +64,10 @@ const IMAGE_HEIGHT: f32 = 400.;
 
 fn on_enter(
     mut commands: Commands,
-    ui_assets: Res<UiAssets>,
     game_data: Res<GameData>,
     window: Query<&Window, With<PrimaryWindow>>,
+    ui_assets: Res<UiAssets>,
+    audio_assets: Res<AudioAssets>,
 ) {
     let window = window.single();
     let width = window.resolution.width();
@@ -101,10 +103,17 @@ fn on_enter(
     let move_out_tween = move_out_tween(&width, &height, &IMAGE_WIDTH, &IMAGE_HEIGHT);
 
     let sequence = Delay::new(Duration::from_millis(ANIM_FADE_IN_COLOUR))
-        .with_completed_event(REMOVE_CHOICES)
+        .with_completed_event(EVENT_REMOVE)
         .then(
-            move_in_tween.then(Delay::new(Duration::from_millis(ANIM_STAY)).then(move_out_tween)),
+            move_in_tween
+                .with_completed_event(EVENT_AUDIO)
+                .then(Delay::new(Duration::from_millis(ANIM_STAY)).then(move_out_tween)),
         );
+
+    let audio = match result.outcome {
+        Outcome::Draw => get_random(&audio_assets.draw).clone(),
+        _ => get_random(&audio_assets.laugh).clone(),
+    };
 
     commands
         .spawn((
@@ -122,6 +131,7 @@ fn on_enter(
             Animator::new(background_animation),
         ))
         .with_children(|parent| {
+            parent.spawn(AudioPlayer::new(audio));
             parent.spawn((
                 Node {
                     width: Val::Px(800.0),
@@ -208,13 +218,25 @@ fn update_next_flow(
     mut game_data: ResMut<GameData>,
     mut game_flow: ResMut<NextState<GameState>>,
     popup_item_query: Query<Entity, With<ActionPopupItem>>,
+    popup_query: Query<Entity, With<ResolveActionPopup>>,
     ui_assets: Res<UiAssets>,
+    audio_assets: Res<AudioAssets>,
 ) {
     for event in reader.read() {
         match event.user_data {
-            REMOVE_CHOICES => {
+            EVENT_REMOVE => {
                 for item in &popup_item_query {
                     commands.entity(item).despawn_recursive();
+                }
+                // Also play audio here
+                let audio = match game_data.get_action_result().choice {
+                    Choice::Action(Action::Hand) => get_random(&audio_assets.nuggie).clone(),
+                    Choice::Action(Action::Toilet) => get_random(&audio_assets.swirly).clone(),
+                    Choice::Action(Action::Underwear) => get_random(&audio_assets.wedgie).clone(),
+                    _ => get_random(&audio_assets.laugh).clone(),
+                };
+                if let Ok(popup) = popup_query.get_single() {
+                    commands.entity(popup).insert(AudioPlayer::new(audio));
                 }
             }
             RESOLVE_COMPLETE_ID => {
@@ -261,11 +283,11 @@ fn update_next_flow(
                 game_data.action = 0;
                 game_flow.set(GameState::SelectElement);
             }
-            COMBO_BREAKER => {
+            EVENT_COMBO_BREAKER => {
                 game_data.action = 0;
                 game_flow.set(GameState::SelectElement);
             }
-            LOOP => {
+            EVENT_LOOP => {
                 game_flow.set(GameState::SelectAction);
             }
             _ => (),
@@ -319,7 +341,7 @@ fn advantage(
                 commands,
                 "Red has the Advantage",
                 "The combat will continue until Red loses",
-                LOOP,
+                EVENT_LOOP,
                 &ui_assets,
             );
             game_data.advantage = Player::One
@@ -329,7 +351,7 @@ fn advantage(
                 commands,
                 "Blue has the Advantage",
                 "The combat will continue until Blue loses",
-                LOOP,
+                EVENT_LOOP,
                 &ui_assets,
             );
             game_data.advantage = Player::Two

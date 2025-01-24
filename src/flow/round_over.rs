@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
+    combo::GameData,
     config::{BUTTON_BORDER, BUTTON_HEIGHT, BUTTON_WIDTH, NORMAL_BUTTON, SIZE_M, SIZE_XL},
-    globals::UiAssets,
+    globals::{AudioAssets, UiAssets},
     helper::{despawn, handle_buttons},
     schedule::GameSet,
     state::GameState,
+    types::Player,
 };
 
 #[derive(Component, Debug)]
@@ -29,7 +31,23 @@ impl Plugin for RoundOverPlugin {
     }
 }
 
-fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
+fn on_enter(
+    mut commands: Commands,
+    ui_assets: Res<UiAssets>,
+    audio_assets: Res<AudioAssets>,
+    game_data: Res<GameData>,
+) {
+    let winner = game_data.get_winner();
+    let audio = match winner {
+        Player::One => audio_assets.player_one_wins.clone(),
+        Player::Two => audio_assets.player_two_wins.clone(),
+    };
+
+    let text = match winner {
+        Player::One => "Red Wins!",
+        Player::Two => "Blue Wins!",
+    };
+
     // Spawn the Root Node
     commands
         .spawn((
@@ -47,6 +65,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
         ))
         .with_children(|parent| {
             // Title
+            parent.spawn(AudioPlayer::new(audio)),
             parent
                 .spawn(Node {
                     flex_direction: FlexDirection::Row,
@@ -56,7 +75,7 @@ fn on_enter(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 .with_children(|parent| {
                     // Text
                     parent.spawn((
-                        Text::new("Game Over!"),
+                        Text::new(text),
                         TextFont {
                             font: ui_assets.ms_pain.clone(),
                             font_size: SIZE_XL,

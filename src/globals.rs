@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     combo::ResolveResult,
@@ -48,6 +48,13 @@ pub struct AudioAssets {
     pub ready: Handle<AudioSource>,
     pub player_one_wins: Handle<AudioSource>,
     pub player_two_wins: Handle<AudioSource>,
+    pub draw: Vec<Handle<AudioSource>>,
+    pub select_fire: Handle<AudioSource>,
+    pub select_grass: Handle<AudioSource>,
+    pub select_water: Handle<AudioSource>,
+    pub select_generic: Vec<Handle<AudioSource>>,
+    pub player_one_advantage: Handle<AudioSource>,
+    pub combo_breaker: Handle<AudioSource>,
 }
 
 #[derive(Resource, Debug, Default)]
@@ -171,4 +178,12 @@ fn setup_audio_assets(asset_server: Res<AssetServer>, mut audio_assets: ResMut<A
     audio_assets.player_two_wins = asset_server.load("audio/player_2_wins.ogg");
 
     audio_assets.ready = asset_server.load("audio/ready.ogg");
+    audio_assets
+        .draw
+        .push(asset_server.load("audio/draw_1.ogg"));
+    audio_assets
+        .draw
+        .push(asset_server.load("audio/draw_2.ogg"));
+
+    audio_assets.selection.insert()
 }

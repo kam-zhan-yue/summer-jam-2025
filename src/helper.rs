@@ -1,6 +1,13 @@
 use bevy::{color::palettes::basic::*, prelude::*};
+use rand::seq::SliceRandom;
+use rand::thread_rng; // 0.7.2
 
 use crate::config::{HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON};
+
+pub fn get_random<T>(vec: &Vec<T>) -> &T {
+    let mut rng = thread_rng();
+    vec.choose(&mut rng).unwrap()
+}
 
 // Generic system that takes a component as a parameter, and will despawn all entities with that component
 pub fn despawn<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
