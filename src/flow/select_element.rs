@@ -117,7 +117,7 @@ fn handle_countdown(
     for event in reader.read() {
         if event.user_data == COUNTDOWN_STATE {
             countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
-            next_ui_flow.set(UiState::Countdown)
+            next_ui_flow.set(UiState::Countdown);
         }
     }
 
@@ -125,6 +125,7 @@ fn handle_countdown(
         match current_ui_flow.get() {
             // Go to the reveal after the countdown
             UiState::Countdown => {
+                next_ui_flow.set(UiState::None);
                 countdown.reset(Timer::from_seconds(REVEAL_TIME, TimerMode::Once));
                 next_game_flow.set(GameState::SelectAction);
             }

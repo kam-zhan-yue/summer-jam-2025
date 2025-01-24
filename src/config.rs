@@ -16,6 +16,10 @@ pub const SIZE_M: f32 = 32.0;
 pub const SIZE_S: f32 = 24.0;
 pub const SIZE_XS: f32 = 16.0;
 
+// ====== IMAGES ======
+pub const CONTROLS_WIDTH: f32 = 377.0;
+pub const CONTROLS_HEIGHT: f32 = 265.0;
+
 // ====== BUTTONS ======
 pub const BUTTON_WIDTH: Val = Val::Px(200.0);
 pub const BUTTON_HEIGHT: Val = Val::Px(50.0);

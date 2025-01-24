@@ -203,8 +203,8 @@ fn spawn_image_node(
                 .with_child((
                     ImageNode::new(image),
                     Node {
-                        width: Val::Px(75.0),
-                        height: Val::Px(75.0),
+                        width: Val::Auto,
+                        height: Val::Auto,
                         ..default()
                     },
                 ));
