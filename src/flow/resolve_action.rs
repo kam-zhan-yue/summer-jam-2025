@@ -248,26 +248,38 @@ fn update_next_flow(
                     game_over(&mut game_flow);
                 } else {
                     match (&result.outcome, game_data.action) {
-                        (Outcome::Draw, 1) => back_to_element(&mut commands, &ui_assets),
+                        (Outcome::Draw, 1) => {
+                            back_to_element(&mut commands, &ui_assets, &audio_assets)
+                        }
                         (Outcome::Draw, _) => loop_action(
                             &mut commands,
                             &result,
                             &game_data,
                             &mut game_flow,
                             &ui_assets,
+                            &audio_assets,
                         ),
-                        (Outcome::PlayerOne, 1) => {
-                            advantage(&mut commands, &result, &mut game_data, &ui_assets)
-                        }
-                        (Outcome::PlayerTwo, 1) => {
-                            advantage(&mut commands, &result, &mut game_data, &ui_assets)
-                        }
+                        (Outcome::PlayerOne, 1) => advantage(
+                            &mut commands,
+                            &result,
+                            &mut game_data,
+                            &ui_assets,
+                            &audio_assets,
+                        ),
+                        (Outcome::PlayerTwo, 1) => advantage(
+                            &mut commands,
+                            &result,
+                            &mut game_data,
+                            &ui_assets,
+                            &audio_assets,
+                        ),
                         (Outcome::PlayerOne, _) => loop_action(
                             &mut commands,
                             &result,
                             &game_data,
                             &mut game_flow,
                             &ui_assets,
+                            &audio_assets,
                         ),
                         (Outcome::PlayerTwo, _) => loop_action(
                             &mut commands,
@@ -275,6 +287,7 @@ fn update_next_flow(
                             &game_data,
                             &mut game_flow,
                             &ui_assets,
+                            &audio_assets,
                         ),
                     }
                 }
@@ -295,13 +308,18 @@ fn update_next_flow(
     }
 }
 
-fn back_to_element(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
+fn back_to_element(
+    commands: &mut Commands,
+    ui_assets: &Res<UiAssets>,
+    audio_assets: &Res<AudioAssets>,
+) {
     transition_title(
         commands,
         "No Advantage",
         "Restarting Round",
         BACK_TO_ELEMENT,
         &ui_assets,
+        audio_assets.no_advantage.clone(),
     );
 }
 
@@ -311,21 +329,27 @@ fn loop_action(
     game_data: &ResMut<GameData>,
     game_flow: &mut ResMut<NextState<GameState>>,
     ui_assets: &Res<UiAssets>,
+    audio_assets: &Res<AudioAssets>,
 ) {
     match (&result.outcome, &game_data.advantage) {
-        (Outcome::PlayerOne, Player::Two) => combo_breaker(commands, &ui_assets),
-        (Outcome::PlayerTwo, Player::One) => combo_breaker(commands, &ui_assets),
+        (Outcome::PlayerOne, Player::Two) => combo_breaker(commands, &ui_assets, &audio_assets),
+        (Outcome::PlayerTwo, Player::One) => combo_breaker(commands, &ui_assets, &audio_assets),
         _ => game_flow.set(GameState::SelectAction),
     }
 }
 
-fn combo_breaker(commands: &mut Commands, ui_assets: &Res<UiAssets>) {
+fn combo_breaker(
+    commands: &mut Commands,
+    ui_assets: &Res<UiAssets>,
+    audio_assets: &Res<AudioAssets>,
+) {
     transition_title(
         commands,
         "COMBO BREAKER!",
         "Restarting Round",
         BACK_TO_ELEMENT,
         &ui_assets,
+        audio_assets.combo_breaker.clone(),
     );
 }
 
@@ -334,6 +358,7 @@ fn advantage(
     result: &ResolveResult,
     game_data: &mut ResMut<GameData>,
     ui_assets: &Res<UiAssets>,
+    audio_assets: &Res<AudioAssets>,
 ) {
     match result.outcome {
         Outcome::PlayerOne => {
@@ -343,6 +368,7 @@ fn advantage(
                 "The combat will continue until Red loses",
                 EVENT_LOOP,
                 &ui_assets,
+                audio_assets.player_one_advantage.clone(),
             );
             game_data.advantage = Player::One
         }
@@ -353,6 +379,7 @@ fn advantage(
                 "The combat will continue until Blue loses",
                 EVENT_LOOP,
                 &ui_assets,
+                audio_assets.player_two_advantage.clone(),
             );
             game_data.advantage = Player::Two
         }
@@ -367,6 +394,7 @@ fn transition_title(
     subtitle: &str,
     next_state: u64,
     ui_assets: &Res<UiAssets>,
+    audio: Handle<AudioSource>,
 ) {
     let tween_scale = scale_up().then(
         Delay::new(Duration::from_millis(ANIM_STAY))
@@ -391,6 +419,7 @@ fn transition_title(
             Animator::new(tween_scale),
         ))
         .with_children(|parent| {
+            parent.spawn(AudioPlayer::new(audio));
             parent.spawn((
                 Text::new(title),
                 TextFont {

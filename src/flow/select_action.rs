@@ -10,8 +10,8 @@ use crate::{
     combo::{GameData, PlayerData},
     config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, SIZE_XXL, TRANSPARENT},
     events::SelectActionEvent,
-    globals::UiAssets,
-    helper::{despawn, hide, show},
+    globals::{AudioAssets, UiAssets},
+    helper::{despawn, get_random, hide, show},
     schedule::GameSet,
     state::{GameState, UiState},
     types::Player,
@@ -54,7 +54,7 @@ impl Plugin for SelectActionPlugin {
 
         app.add_systems(
             Update,
-            (handle_countdown, handle_input)
+            (handle_countdown, handle_input, select_audio)
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::SelectAction)),
         );
@@ -77,6 +77,7 @@ fn on_enter(
     mut countdown: ResMut<Countdown>,
     mut next_ui: ResMut<NextState<UiState>>,
     game_data: Res<GameData>,
+    audio_assets: Res<AudioAssets>,
 ) {
     if game_data.action >= 1 {
         countdown.reset(Timer::from_seconds(COUNTDOWN_TIME, TimerMode::Once));
@@ -120,6 +121,7 @@ fn on_enter(
             },
             TextColor(Color::WHITE),
             Animator::new(title_animation),
+            AudioPlayer::new(audio_assets.fight.clone()),
         ));
 }
 
@@ -178,5 +180,19 @@ fn process_input(
 
     if let Some(choice) = selected_choice {
         player_data.select_action(player, choice.action, writer);
+    }
+}
+
+fn select_audio(
+    mut commands: Commands,
+    popup_query: Query<Entity, With<SelectActionPopup>>,
+    mut reader: EventReader<SelectActionEvent>,
+    audio_assets: Res<AudioAssets>,
+) {
+    for _ in reader.read() {
+        let audio = get_random(&audio_assets.select_generic).clone();
+        if let Ok(popup) = popup_query.get_single() {
+            commands.entity(popup).insert(AudioPlayer::new(audio));
+        }
     }
 }

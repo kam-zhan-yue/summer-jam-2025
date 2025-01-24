@@ -11,11 +11,11 @@ use crate::{
         TRANSPARENT,
     },
     events::SelectElementEvent,
-    globals::UiAssets,
-    helper::despawn,
+    globals::{AudioAssets, UiAssets},
+    helper::{despawn, get_random},
     schedule::GameSet,
     state::{GameState, UiState},
-    types::Player,
+    types::{Choice, Element, Player},
 };
 
 use super::countdown::Countdown;
@@ -38,7 +38,7 @@ impl Plugin for SelectElementPlugin {
         );
         app.add_systems(
             Update,
-            (handle_countdown, handle_input)
+            (handle_countdown, handle_input, select_audio)
                 .in_set(GameSet::Ui)
                 .run_if(in_state(GameState::SelectElement)),
         );
@@ -62,6 +62,7 @@ fn on_enter(
     mut commands: Commands,
     ui_assets: Res<UiAssets>,
     mut next_ui: ResMut<NextState<UiState>>,
+    audio_assets: Res<AudioAssets>,
 ) {
     next_ui.set(UiState::Title);
 
@@ -99,6 +100,7 @@ fn on_enter(
             },
             TextColor(Color::WHITE),
             Animator::new(title_animation),
+            AudioPlayer::new(audio_assets.select_element.clone()),
         ));
 }
 
@@ -161,5 +163,24 @@ fn process_input(
 
     if let Some(choice) = selected_choice {
         player_data.select_element(player, choice.element, writer);
+    }
+}
+
+fn select_audio(
+    mut commands: Commands,
+    popup_query: Query<Entity, With<SelectElementPopup>>,
+    mut reader: EventReader<SelectElementEvent>,
+    audio_assets: Res<AudioAssets>,
+) {
+    for event in reader.read() {
+        let audio = match event.element {
+            Choice::Element(Element::Fire) => audio_assets.select_fire.clone(),
+            Choice::Element(Element::Water) => audio_assets.select_water.clone(),
+            Choice::Element(Element::Grass) => audio_assets.select_grass.clone(),
+            _ => get_random(&audio_assets.select_generic).clone(),
+        };
+        if let Ok(popup) = popup_query.get_single() {
+            commands.entity(popup).insert(AudioPlayer::new(audio));
+        }
     }
 }

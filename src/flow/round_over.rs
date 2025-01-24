@@ -65,7 +65,7 @@ fn on_enter(
         ))
         .with_children(|parent| {
             // Title
-            parent.spawn(AudioPlayer::new(audio)),
+            parent.spawn(AudioPlayer::new(audio));
             parent
                 .spawn(Node {
                     flex_direction: FlexDirection::Row,

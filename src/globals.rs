@@ -54,6 +54,10 @@ pub struct AudioAssets {
     pub select_water: Handle<AudioSource>,
     pub select_generic: Vec<Handle<AudioSource>>,
     pub player_one_advantage: Handle<AudioSource>,
+    pub player_two_advantage: Handle<AudioSource>,
+    pub no_advantage: Handle<AudioSource>,
+    pub fight: Handle<AudioSource>,
+    pub select_element: Handle<AudioSource>,
     pub combo_breaker: Handle<AudioSource>,
 }
 
@@ -185,5 +189,19 @@ fn setup_audio_assets(asset_server: Res<AssetServer>, mut audio_assets: ResMut<A
         .draw
         .push(asset_server.load("audio/draw_2.ogg"));
 
-    audio_assets.selection.insert()
+    audio_assets.select_fire = asset_server.load("audio/select_fire.ogg");
+    audio_assets.select_grass = asset_server.load("audio/select_grass.ogg");
+    audio_assets.select_water = asset_server.load("audio/select_water.ogg");
+    audio_assets
+        .select_generic
+        .push(asset_server.load("audio/select_generic_1.ogg"));
+    audio_assets
+        .select_generic
+        .push(asset_server.load("audio/select_generic_2.ogg"));
+    audio_assets.select_element = asset_server.load("audio/announce_select_element.ogg");
+    audio_assets.fight = asset_server.load("audio/announce_fight.ogg");
+    audio_assets.combo_breaker = asset_server.load("audio/announce_combo.ogg");
+    audio_assets.player_one_advantage = asset_server.load("audio/announce_one_adv.ogg");
+    audio_assets.player_two_advantage = asset_server.load("audio/announce_two_adv.ogg");
+    audio_assets.no_advantage = asset_server.load("audio/announce_no_adv.ogg");
 }
