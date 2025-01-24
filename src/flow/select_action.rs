@@ -195,7 +195,7 @@ fn select_audio(
     for _ in reader.read() {
         let audio = get_random(&audio_assets.select_generic).clone();
         if let Ok(popup) = popup_query.get_single() {
-            commands.entity(popup).insert(AudioPlayer::new(audio));
+            commands.entity(popup).with_child(AudioPlayer::new(audio));
         }
     }
 }

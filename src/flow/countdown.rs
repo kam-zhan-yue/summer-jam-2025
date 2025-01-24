@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    config::{SIZE_XL, START_STATE},
+    config::{SIZE_XXL, START_STATE},
     globals::UiAssets,
     helper::{despawn, hide, show},
     schedule::GameSet,
@@ -90,7 +90,7 @@ fn setup(mut commands: Commands, ui_assets: Res<UiAssets>) {
             Text::new("3.0"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: SIZE_XL,
+                font_size: SIZE_XXL,
                 ..default()
             },
             TextColor(Color::BLACK),
