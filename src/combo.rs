@@ -1,7 +1,7 @@
 use crate::animations::shake_player_sequence;
 use crate::config::{FADED_PLAYER, MAX_HEALTH, START_STATE};
 use crate::events::{SelectActionEvent, SelectElementEvent};
-use crate::globals::GameAssets;
+use crate::globals::{GameAssets, PlayerAsset};
 use crate::helper::despawn;
 use crate::schedule::GameSet;
 use crate::settings::{GameMode, GameSettings};
@@ -218,9 +218,12 @@ impl Plugin for ComboPlugin {
         );
         app.add_systems(
             OnEnter(GameState::SelectElement),
-            fade_players.in_set(GameSet::Flow),
+            (fade_players, reset_player_elements).in_set(GameSet::Flow),
         );
-        app.add_systems(Update, shake_players.in_set(GameSet::Flow));
+        app.add_systems(
+            Update,
+            (animate_players, shake_players, update_player_elements).in_set(GameSet::Flow),
+        );
         app.add_systems(
             OnExit(GameState::GameOver),
             (despawn::<PlayerOne>, despawn::<PlayerTwo>).in_set(GameSet::Flow),
@@ -288,22 +291,21 @@ fn setup_game(
         game_data.player_two.input = PlayerInput::new(player_two_inputs);
     }
 
-    let texture = game_assets.player_two.neutral.clone();
     let layout = TextureAtlasLayout::from_grid(UVec2::new(302, 286), 2, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
     spawn_player(
         &mut commands,
         PlayerOne,
         Vec3::new(-360.0, -100.0, 0.0),
-        AnimationConfig::new(1, 2, 10),
+        AnimationConfig::new(0, 1, 10),
         game_assets.player_one.neutral.clone(),
         texture_atlas_layout.clone(),
     );
     spawn_player(
         &mut commands,
-        PlayerOne,
+        PlayerTwo,
         Vec3::new(360.0, -100.0, 0.0),
-        AnimationConfig::new(1, 2, 10),
+        AnimationConfig::new(0, 1, 10),
         game_assets.player_two.neutral.clone(),
         texture_atlas_layout.clone(),
     );
@@ -333,6 +335,23 @@ fn spawn_player(
     ));
 }
 
+fn animate_players(time: Res<Time>, mut query: Query<(&mut AnimationConfig, &mut Sprite)>) {
+    for (mut config, mut sprite) in query.iter_mut() {
+        config.frame_timer.tick(time.delta());
+
+        if config.frame_timer.just_finished() {
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                if atlas.index == config.last_sprite_index {
+                    atlas.index = config.first_sprite_index;
+                } else {
+                    atlas.index += 1;
+                }
+                config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
+            }
+        }
+    }
+}
+
 fn fade_players(
     mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
     mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
@@ -343,6 +362,51 @@ fn fade_players(
 
     if let Ok(mut player_two) = player_two_query.get_single_mut() {
         player_two.color = FADED_PLAYER;
+    }
+}
+
+fn update_player_elements(
+    mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
+    mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut element_reader: EventReader<SelectElementEvent>,
+    game_assets: Res<GameAssets>,
+) {
+    for event in element_reader.read() {
+        match event.player {
+            Player::One => {
+                if let Ok(mut sprite) = player_one_query.get_single_mut() {
+                    update_player_element(&mut sprite, &event.element, &game_assets.player_one);
+                }
+            }
+            Player::Two => {
+                if let Ok(mut sprite) = player_two_query.get_single_mut() {
+                    update_player_element(&mut sprite, &event.element, &game_assets.player_two);
+                }
+            }
+        }
+    }
+}
+
+fn update_player_element(sprite: &mut Sprite, element: &Choice, player_asset: &PlayerAsset) {
+    match element {
+        Choice::Element(Element::Fire) => sprite.image = player_asset.fire.clone(),
+        Choice::Element(Element::Water) => sprite.image = player_asset.water.clone(),
+        Choice::Element(Element::Grass) => sprite.image = player_asset.grass.clone(),
+        _ => sprite.image = player_asset.neutral.clone(),
+    }
+}
+
+fn reset_player_elements(
+    mut player_one_query: Query<&mut Sprite, With<PlayerOne>>,
+    mut player_two_query: Query<&mut Sprite, (With<PlayerTwo>, Without<PlayerOne>)>,
+    game_assets: Res<GameAssets>,
+) {
+    if let Ok(mut sprite) = player_one_query.get_single_mut() {
+        update_player_element(&mut sprite, &Choice::None, &game_assets.player_one);
+    }
+
+    if let Ok(mut sprite) = player_two_query.get_single_mut() {
+        update_player_element(&mut sprite, &Choice::None, &game_assets.player_two);
     }
 }
 
@@ -360,7 +424,7 @@ fn shake_players(
         match event.player {
             Player::One => {
                 if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
-                    update_player(
+                    shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
@@ -371,7 +435,7 @@ fn shake_players(
             }
             Player::Two => {
                 if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
-                    update_player(
+                    shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
@@ -386,7 +450,7 @@ fn shake_players(
         match event.player {
             Player::One => {
                 if let Ok((entity, transform, mut sprite)) = player_one_query.get_single_mut() {
-                    update_player(
+                    shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
@@ -397,7 +461,7 @@ fn shake_players(
             }
             Player::Two => {
                 if let Ok((entity, transform, mut sprite)) = player_two_query.get_single_mut() {
-                    update_player(
+                    shake_player(
                         &event.player,
                         &mut commands,
                         &entity,
@@ -410,7 +474,7 @@ fn shake_players(
     }
 }
 
-fn update_player(
+fn shake_player(
     player: &Player,
     commands: &mut Commands,
     entity: &Entity,
