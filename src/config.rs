@@ -56,6 +56,9 @@ pub const LOSS_COLOUR_SOLID: Color = Color::srgba(0.2, 0.2, 0.2, 1.0);
 pub const WON_COLOUR_TRANSPARENT: Color = Color::srgba(0.2, 0.8, 0.2, 0.0);
 pub const WON_COLOUR_SOLID: Color = Color::srgba(0.2, 0.8, 0.2, 1.0);
 
+pub const BOT_TIME_MIN: f32 = 0.2;
+pub const BOT_TIME_MAX: f32 = 1.2;
+
 // Time Allowed to Choose an Element / Action
 pub const COUNTDOWN_TIME: f32 = 4.0;
 // Time Spent to Reveal Elements / Actions
