@@ -44,7 +44,9 @@ pub struct ChoiceSelection {
 }
 
 impl ChoiceSelection {
-    pub fn can_double(self) -> bool {
+    pub fn can_double(&self) -> bool {
+        let action = Choice::get_complement(&self.action);
+        println!("Element {} Action {}", self.element, action);
         self.element == Choice::get_complement(&self.action)
     }
 }
@@ -126,9 +128,9 @@ impl GameData {
         self.action = 0;
     }
 
-    pub fn reset_choice(&mut self) {
-        self.player_one.choice_selection = ChoiceSelection::default();
-        self.player_two.choice_selection = ChoiceSelection::default();
+    pub fn reset_action(&mut self) {
+        self.player_one.choice_selection.action = Choice::None;
+        self.player_two.choice_selection.action = Choice::None;
     }
 
     pub fn get_action_result(&self) -> ResolveResult {
@@ -158,7 +160,7 @@ impl GameData {
             Outcome::Draw => (),
         }
         // Reset Choices
-        self.reset_choice();
+        self.reset_action();
     }
 
     pub fn resolve(&self, get_choice: fn(&PlayerData) -> Choice) -> ResolveResult {

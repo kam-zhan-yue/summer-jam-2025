@@ -1,1 +1,4 @@
 /target
+/webbuild/*
+!/webbuild/
+!/webbuild/index.html

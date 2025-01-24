@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset::AssetMetaCheck, prelude::*};
 
 mod animations;
 mod camera;
@@ -29,7 +29,22 @@ use ui::UIPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Swirly Whirly".into(),
+                        fit_canvas_to_parent: true,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
         .add_plugins(GlobalPlugin)
         .add_plugins(EventsPlugin)
         .add_plugins(FlowPlugin)
