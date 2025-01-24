@@ -6,10 +6,11 @@ use crate::state::GameState;
 pub const START_STATE: GameState = GameState::GameStart;
 
 // Max Health of the player
-pub const MAX_HEALTH: i32 = 1;
+pub const MAX_HEALTH: i32 = 5;
 
 // ====== FONTS ======
-pub const SIZE_XXL: f32 = 128.0;
+pub const SIZE_XXXL: f32 = 128.0;
+pub const SIZE_XXL: f32 = 96.0;
 pub const SIZE_XL: f32 = 64.0;
 // pub const SIZE_L: f32 = 48.0;
 pub const SIZE_M: f32 = 32.0;
@@ -28,7 +29,7 @@ pub const BORDER_RADIUS: Val = Val::Px(5.0);
 
 pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+pub const PRESSED_BUTTON: Color = Color::srgb(0.60, 0.60, 0.60);
 
 // ====== ANIMATIONS ======
 pub const ANIM_SCROLL_LEFT: u64 = 1000;

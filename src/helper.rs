@@ -1,4 +1,4 @@
-use bevy::{color::palettes::basic::*, prelude::*};
+use bevy::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng; // 0.7.2
 
@@ -38,7 +38,7 @@ pub fn handle_buttons(
         match *interaction {
             Interaction::Pressed => {
                 *colour = PRESSED_BUTTON.into();
-                border_colour.0 = RED.into();
+                border_colour.0 = Color::BLACK;
             }
             Interaction::Hovered => {
                 *colour = HOVERED_BUTTON.into();

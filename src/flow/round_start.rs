@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_tweening::{Animator, Delay, TweenCompleted};
 
 use crate::animations::{fade_in, fade_out, scale_down, scale_up};
-use crate::config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, SIZE_XXL, TRANSPARENT};
+use crate::config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, SIZE_XXXL, TRANSPARENT};
 use crate::globals::AudioAssets;
 use crate::helper::despawn;
 use crate::schedule::GameSet;
@@ -69,7 +69,7 @@ fn on_enter(
                 Text::new("SWIRLY"),
                 TextFont {
                     font: ui_assets.ms_pain.clone(),
-                    font_size: SIZE_XXL,
+                    font_size: SIZE_XXXL,
                     ..default()
                 },
                 Node {
@@ -83,7 +83,7 @@ fn on_enter(
                 Text::new("WHIRLY"),
                 TextFont {
                     font: ui_assets.ms_pain.clone(),
-                    font_size: SIZE_XXL,
+                    font_size: SIZE_XXXL,
                     ..default()
                 },
                 Transform {

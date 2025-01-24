@@ -8,7 +8,9 @@ pub const COUNTDOWN_STATE: u64 = 800;
 use crate::{
     animations::{fade_in, fade_out, scale_down, scale_up},
     combo::{GameData, PlayerData},
-    config::{ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, SIZE_XXL, TRANSPARENT},
+    config::{
+        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, SIZE_XXXL, TRANSPARENT,
+    },
     events::SelectActionEvent,
     globals::{AudioAssets, UiAssets},
     helper::{despawn, get_random, hide, show},
@@ -112,7 +114,7 @@ fn on_enter(
             Text::new("FIGHT!"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: SIZE_XXL,
+                font_size: SIZE_XXXL,
                 ..default()
             },
             Node {

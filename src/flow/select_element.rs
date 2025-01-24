@@ -7,7 +7,7 @@ use crate::{
     animations::{fade_in, fade_out, scale_down, scale_up},
     combo::{GameData, PlayerData},
     config::{
-        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXL,
+        ANIM_FADE_IN, ANIM_SCALE_DOWN, ANIM_SCALE_UP, COUNTDOWN_TIME, REVEAL_TIME, SIZE_XXXL,
         TRANSPARENT,
     },
     events::SelectElementEvent,
@@ -91,7 +91,7 @@ fn on_enter(
             Text::new("SELECT ELEMENT"),
             TextFont {
                 font: ui_assets.ms_pain.clone(),
-                font_size: SIZE_XXL,
+                font_size: SIZE_XXXL,
                 ..default()
             },
             Node {
